@@ -4,12 +4,72 @@ import { useState, useEffect, useCallback } from "react";
 import KakaoMapComponent from "@/components/KakaoMap";
 import PlaceDetailCard from "@/components/PlaceDetailCard";
 import { dummyPlaces } from "@/data/dummyPlaces";
+import MenuRoulette from "@/components/MenuRoulette";
 import type { PlaceData } from "@/types/kakao";
 
-const HEADER_HEIGHT = 48;
+const HEADER_HEIGHT = 56;
 
-const tabs = ["홈", "맛집 지도", "맛집 목록", "마이"] as const;
+const tabs = ["홈", "맛집 지도", "메뉴 추천", "맛집 목록", "마이"] as const;
 type Tab = (typeof tabs)[number];
+
+function HomePage() {
+  return (
+    <div className="flex-1 overflow-y-auto bg-white">
+      {/* 히어로 배너 */}
+      <div className="max-w-[900px] mx-auto px-6 pt-6">
+        <div className="w-full h-[240px] bg-gray-200 rounded-2xl" />
+      </div>
+
+      {/* 지금 인기 장소 */}
+      <section className="max-w-[900px] mx-auto px-6 pt-12 pb-4">
+        <h2 className="text-2xl font-bold text-red-400 text-center mb-10">
+          지금 인기 장소
+        </h2>
+        <div className="grid grid-cols-3 gap-4">
+          {dummyPlaces.slice(0, 3).map((place) => (
+            <div key={place.id} className="group cursor-pointer">
+              <div className="aspect-[4/3] bg-gray-200 rounded-xl mb-2" />
+              <p className="text-xs text-gray-500 truncate">{place.name}</p>
+            </div>
+          ))}
+        </div>
+        <div className="flex justify-center mt-6">
+          <button className="bg-gray-900 text-white text-xs font-medium px-5 py-2 rounded-full hover:bg-gray-700 transition-colors">
+            view more
+          </button>
+        </div>
+      </section>
+
+      {/* 새로운 맛집 발견! */}
+      <section className="max-w-[900px] mx-auto px-6 pt-10 pb-12">
+        <h2 className="text-2xl font-bold text-red-400 text-center mb-8">
+          새로운 맛집 발견!
+        </h2>
+        <div className="grid grid-cols-3 gap-4">
+          {dummyPlaces.slice(0, 3).map((place) => (
+            <div
+              key={place.id}
+              className="bg-gray-100 rounded-xl overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+            >
+              <div className="aspect-[4/3] bg-gray-300" />
+              <div className="p-3">
+                <p className="text-xs text-gray-700 leading-relaxed line-clamp-2 mb-2">
+                  &ldquo;{place.review}&rdquo;
+                </p>
+                <p className="text-xs text-gray-500">{place.name}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="flex justify-center mt-6">
+          <button className="bg-gray-900 text-white text-xs font-medium px-5 py-2 rounded-full hover:bg-gray-700 transition-colors">
+            view more
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
 
 export default function Home() {
   const [selectedPlace, setSelectedPlace] = useState<PlaceData | null>(null);
@@ -17,15 +77,13 @@ export default function Home() {
     lat: number;
     lng: number;
   } | null>(null);
-  const [activeTab, setActiveTab] = useState<Tab>("맛집 지도");
+  const [activeTab, setActiveTab] = useState<Tab>("홈");
 
-  // 탭 전환 시 선택된 장소 초기화
   const handleTabChange = (tab: Tab) => {
     setActiveTab(tab);
     setSelectedPlace(null);
   };
 
-  // 현재 위치 가져오기
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -44,59 +102,83 @@ export default function Home() {
 
   const handleMapReady = useCallback(() => {}, []);
 
+  const renderContent = () => {
+    switch (activeTab) {
+      case "홈":
+        return <HomePage />;
+      case "맛집 지도":
+        return (
+          <div className="relative flex-1">
+            <KakaoMapComponent
+              places={dummyPlaces}
+              onPlaceClick={setSelectedPlace}
+              currentLocation={currentLocation}
+              onMapReady={handleMapReady}
+            />
+            {selectedPlace && (
+              <PlaceDetailCard
+                place={selectedPlace}
+                onClose={() => setSelectedPlace(null)}
+              />
+            )}
+          </div>
+        );
+      case "메뉴 추천":
+        return <MenuRoulette />;
+      default:
+        return (
+          <div className="flex-1 bg-gray-50 flex items-center justify-center">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-gray-300 mb-2">
+                {activeTab}
+              </p>
+              <p className="text-sm text-gray-400">준비 중입니다</p>
+            </div>
+          </div>
+        );
+    }
+  };
+
   return (
     <main className="h-screen flex flex-col overflow-hidden">
       {/* 헤더 */}
       <header
-        className="bg-white border-b border-gray-200 flex items-center px-6 shrink-0"
+        className="bg-white border-b border-gray-200 shrink-0"
         style={{ height: HEADER_HEIGHT }}
       >
-        <h1 className="text-[25px] font-bold text-red-500 mr-10 tracking-wide">
-          배부룩
-        </h1>
-        <nav className="flex items-center gap-8">
-          {tabs.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => handleTabChange(tab)}
-              className={`text-sm font-medium transition-colors ${
-                tab === activeTab
-                  ? "text-red-500"
-                  : "text-gray-500 hover:text-gray-800"
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
-        </nav>
+        <div className="max-w-[900px] mx-auto h-full flex items-center justify-center gap-10 relative">
+          <h1
+            className="text-xl font-extrabold text-red-500 tracking-wider cursor-pointer shrink-0"
+            onClick={() => handleTabChange("홈")}
+          >
+            배부룩
+          </h1>
+          <nav className="flex items-center h-full gap-10">
+            {tabs.map((tab) => (
+              <button
+                key={tab}
+                onClick={() => handleTabChange(tab)}
+                className={`relative h-full text-[15px] font-medium transition-colors ${
+                  tab === activeTab
+                    ? "text-red-500"
+                    : "text-gray-500 hover:text-gray-800"
+                }`}
+              >
+                {tab}
+                {tab === activeTab && (
+                  <span className="absolute bottom-0 left-0 right-0 h-[3px] bg-red-500 rounded-t-full" />
+                )}
+              </button>
+            ))}
+          </nav>
+          <button className="absolute right-0 text-xs text-gray-500 border border-gray-300 px-3 py-1.5 rounded-md hover:bg-gray-50 transition-colors">
+            로그인
+          </button>
+        </div>
       </header>
 
       {/* 콘텐츠 영역 */}
-      {activeTab === "맛집 지도" ? (
-        <div className="relative flex-1">
-          <KakaoMapComponent
-            places={dummyPlaces}
-            onPlaceClick={setSelectedPlace}
-            currentLocation={currentLocation}
-            onMapReady={handleMapReady}
-          />
-
-          {/* 마커 클릭 시 플로팅 팝업 카드 */}
-          {selectedPlace && (
-            <PlaceDetailCard
-              place={selectedPlace}
-              onClose={() => setSelectedPlace(null)}
-            />
-          )}
-        </div>
-      ) : (
-        <div className="flex-1 bg-gray-50 flex items-center justify-center">
-          <div className="text-center">
-            <p className="text-2xl font-bold text-gray-300 mb-2">{activeTab}</p>
-            <p className="text-sm text-gray-400">준비 중입니다</p>
-          </div>
-        </div>
-      )}
+      {renderContent()}
     </main>
   );
 }
