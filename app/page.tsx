@@ -16,24 +16,29 @@ function HomePage() {
   return (
     <div className="flex-1 overflow-y-auto bg-white">
       {/* 히어로 배너 */}
-      <div className="max-w-[900px] mx-auto px-4 md:px-6 pt-4 md:pt-6">
+      <div className="max-w-[900px] mx-auto px-4 md:px-6 pt-4 md:pt-6 animate-fade-in-up">
         <div className="w-full h-[140px] sm:h-[180px] md:h-[240px] bg-gray-200 rounded-2xl" />
       </div>
 
       {/* 지금 인기 장소 */}
       <section className="max-w-[900px] mx-auto px-4 md:px-6 pt-8 md:pt-12 pb-4">
-        <h2 className="text-xl md:text-2xl font-bold text-red-400 text-center mb-6 md:mb-10">
+        <h2 className="text-xl md:text-2xl font-bold text-red-400 text-center mb-6 md:mb-10 animate-fade-in-up animate-delay-1">
           지금 인기 장소
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {dummyPlaces.slice(0, 3).map((place) => (
-            <div key={place.id} className="group cursor-pointer">
-              <div className="aspect-[4/3] bg-gray-200 rounded-xl mb-2" />
+          {dummyPlaces.slice(0, 3).map((place, i) => (
+            <div
+              key={place.id}
+              className={`group cursor-pointer animate-fade-in-up animate-delay-${i + 2} hover:-translate-y-1 transition-transform duration-200`}
+            >
+              <div className="aspect-[4/3] bg-gray-200 rounded-xl mb-2 overflow-hidden">
+                <div className="w-full h-full bg-gray-200 group-hover:scale-105 transition-transform duration-300" />
+              </div>
               <p className="text-xs text-gray-500 truncate">{place.name}</p>
             </div>
           ))}
         </div>
-        <div className="flex justify-center mt-6">
+        <div className="flex justify-center mt-6 animate-fade-in-up animate-delay-5">
           <button className="bg-gray-900 text-white text-xs font-medium px-5 py-2 rounded-full hover:bg-gray-700 transition-colors">
             view more
           </button>
@@ -42,16 +47,18 @@ function HomePage() {
 
       {/* 새로운 맛집 발견! */}
       <section className="max-w-[900px] mx-auto px-4 md:px-6 pt-8 md:pt-10 pb-8 md:pb-12">
-        <h2 className="text-xl md:text-2xl font-bold text-red-400 text-center mb-6 md:mb-8">
+        <h2 className="text-xl md:text-2xl font-bold text-red-400 text-center mb-6 md:mb-8 animate-fade-in-up">
           새로운 맛집 발견!
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {dummyPlaces.slice(0, 3).map((place) => (
+          {dummyPlaces.slice(0, 3).map((place, i) => (
             <div
               key={place.id}
-              className="bg-gray-100 rounded-xl overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+              className={`bg-gray-100 rounded-xl overflow-hidden cursor-pointer hover:shadow-md hover:-translate-y-1 transition-all duration-200 animate-fade-in-up animate-delay-${i + 1}`}
             >
-              <div className="aspect-[4/3] bg-gray-300" />
+              <div className="aspect-[4/3] bg-gray-300 overflow-hidden">
+                <div className="w-full h-full bg-gray-300 hover:scale-105 transition-transform duration-300" />
+              </div>
               <div className="p-3">
                 <p className="text-xs text-gray-700 leading-relaxed line-clamp-2 mb-2">
                   &ldquo;{place.review}&rdquo;
@@ -61,7 +68,7 @@ function HomePage() {
             </div>
           ))}
         </div>
-        <div className="flex justify-center mt-6">
+        <div className="flex justify-center mt-6 animate-fade-in-up animate-delay-4">
           <button className="bg-gray-900 text-white text-xs font-medium px-5 py-2 rounded-full hover:bg-gray-700 transition-colors">
             view more
           </button>
