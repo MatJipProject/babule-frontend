@@ -1,11 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface Category {
   name: string;
   emoji: string;
-  color: string;
   menus: string[];
 }
 
@@ -13,62 +12,72 @@ const CATEGORIES: Category[] = [
   {
     name: "한식",
     emoji: "🍚",
-    color: "#FF6B6B",
     menus: ["김치찌개", "된장찌개", "비빔밥", "불고기", "삼겹살", "갈비탕", "냉면", "제육볶음"],
   },
   {
     name: "중식",
     emoji: "🥟",
-    color: "#FFA94D",
     menus: ["짜장면", "짬뽕", "탕수육", "마파두부", "볶음밥", "깐풍기", "양장피", "마라탕"],
   },
   {
     name: "일식",
     emoji: "🍣",
-    color: "#FFD43B",
     menus: ["초밥", "라멘", "우동", "돈카츠", "카레", "사시미", "오코노미야끼", "소바"],
   },
   {
     name: "양식",
     emoji: "🍝",
-    color: "#69DB7C",
     menus: ["파스타", "스테이크", "리조또", "피자", "햄버거", "오믈렛", "그라탕", "샐러드"],
   },
   {
     name: "분식",
     emoji: "🍜",
-    color: "#4DABF7",
     menus: ["떡볶이", "순대", "김밥", "라볶이", "튀김", "어묵", "쫄면", "비빔국수"],
   },
   {
     name: "카페/디저트",
     emoji: "☕",
-    color: "#B197FC",
     menus: ["아메리카노", "카페라떼", "케이크", "마카롱", "와플", "빙수", "스무디", "크로플"],
   },
   {
     name: "치킨",
     emoji: "🍗",
-    color: "#FF8787",
     menus: ["후라이드", "양념치킨", "간장치킨", "마늘치킨", "허니버터", "불닭", "반반치킨", "순살치킨"],
   },
   {
     name: "야식",
     emoji: "🌙",
-    color: "#74C0FC",
     menus: ["족발", "보쌈", "곱창", "회", "닭발", "떡볶이", "라면", "치즈볼"],
   },
 ];
 
-const WHEEL_COLORS = [
-  "#FF6B6B", "#FFA94D", "#FFD43B", "#69DB7C",
-  "#4DABF7", "#B197FC", "#FF8787", "#74C0FC",
+// 채도 낮추고 톤 맞춘 파스텔 팔레트
+const SEGMENT_COLORS = [
+  "#F87171", "#FB923C", "#FBBF24", "#34D399",
+  "#60A5FA", "#A78BFA", "#F472B6", "#38BDF8",
 ];
 
-const WHEEL_SIZE = 400;
-const HALF = WHEEL_SIZE / 2;
+function useWheelSize() {
+  const [size, setSize] = useState(400);
+
+  useEffect(() => {
+    const update = () => {
+      const w = window.innerWidth;
+      if (w < 640) setSize(260);
+      else if (w < 768) setSize(320);
+      else setSize(400);
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
+  return size;
+}
 
 export default function MenuRoulette() {
+  const wheelSize = useWheelSize();
+  const half = wheelSize / 2;
   const [selectedCategory, setSelectedCategory] = useState<Category>(CATEGORIES[0]);
   const [spinning, setSpinning] = useState(false);
   const [result, setResult] = useState<string | null>(null);
@@ -90,9 +99,13 @@ export default function MenuRoulette() {
     const menus = selectedCategory.menus;
     const segmentAngle = 360 / menus.length;
     const randomIndex = Math.floor(Math.random() * menus.length);
-    const targetAngle =
-      360 * (5 + Math.random() * 3) + (menus.length - randomIndex) * segmentAngle;
-    const newRotation = rotation + targetAngle;
+
+    const targetStop = 360 - (randomIndex * segmentAngle + segmentAngle / 2);
+    const currentAngle = rotation % 360;
+    let delta = targetStop - currentAngle;
+    if (delta < 0) delta += 360;
+    const fullSpins = 360 * (5 + Math.floor(Math.random() * 3));
+    const newRotation = rotation + fullSpins + delta;
 
     setRotation(newRotation);
 
@@ -104,25 +117,28 @@ export default function MenuRoulette() {
 
   const menus = selectedCategory.menus;
   const segmentAngle = 360 / menus.length;
+  const borderWidth = wheelSize < 320 ? 5 : 7;
 
   return (
-    <div className="flex-1 overflow-y-auto bg-white">
-      <div className="max-w-[640px] mx-auto px-6 py-8 flex flex-col items-center">
-        <h2 className="text-2xl font-bold text-red-400 mb-2">오늘 뭐 먹지?</h2>
-        <p className="text-sm text-gray-400 mb-6">
+    <div className="flex-1 overflow-y-auto bg-gray-50/80">
+      <div className="max-w-[640px] mx-auto px-4 md:px-6 py-6 md:py-8 flex flex-col items-center">
+        <h2 className="text-xl md:text-2xl font-extrabold text-gray-800 mb-1">
+          오늘 뭐 먹지?
+        </h2>
+        <p className="text-xs sm:text-sm text-gray-400 mb-5 md:mb-7">
           분야를 선택하고 룰렛을 돌려보세요!
         </p>
 
-        {/* 카테고리 선택 (가로 한 줄) */}
-        <div className="flex gap-2 mb-10 flex-wrap justify-center">
+        {/* 카테고리 선택 */}
+        <div className="flex gap-1.5 sm:gap-2 mb-6 md:mb-10 flex-wrap justify-center">
           {CATEGORIES.map((cat) => (
             <button
               key={cat.name}
               onClick={() => handleCategorySelect(cat)}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all ${
+              className={`flex items-center gap-1 sm:gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 ${
                 selectedCategory.name === cat.name
-                  ? "bg-red-500 text-white shadow-md"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  ? "bg-gray-900 text-white"
+                  : "bg-white text-gray-500 border border-gray-200 hover:border-gray-300 hover:text-gray-700"
               }`}
             >
               <span>{cat.emoji}</span>
@@ -132,54 +148,74 @@ export default function MenuRoulette() {
         </div>
 
         {/* 룰렛 */}
-        <div className="relative mb-10">
+        <div className="relative mb-6 md:mb-10">
           {/* 화살표 */}
-          <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
+          <div className="absolute left-1/2 -translate-x-1/2 z-20" style={{ top: -(borderWidth + 6) }}>
             <div
               className="w-0 h-0"
               style={{
-                borderLeft: "14px solid transparent",
-                borderRight: "14px solid transparent",
-                borderTop: "24px solid #ef4444",
+                borderLeft: `${wheelSize < 320 ? 10 : 13}px solid transparent`,
+                borderRight: `${wheelSize < 320 ? 10 : 13}px solid transparent`,
+                borderTop: `${wheelSize < 320 ? 20 : 26}px solid #1f2937`,
+                filter: "drop-shadow(0 2px 3px rgba(0,0,0,0.15))",
               }}
             />
           </div>
 
-          {/* 바퀴 */}
+          {/* 외곽 링 */}
           <div
-            className="rounded-full relative overflow-hidden shadow-xl border-[6px] border-white"
+            className="rounded-full relative"
             style={{
-              width: WHEEL_SIZE,
-              height: WHEEL_SIZE,
-              transform: `rotate(${rotation}deg)`,
-              transition: spinning
-                ? "transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)"
-                : "none",
+              width: wheelSize + borderWidth * 2,
+              height: wheelSize + borderWidth * 2,
+              padding: borderWidth,
+              background: "#1f2937",
+              boxShadow: "0 8px 30px rgba(0,0,0,0.12)",
             }}
           >
-            {menus.map((menu, i) => {
-              const startAngle = i * segmentAngle;
-              const midAngle = startAngle + segmentAngle / 2;
-              const radMid = ((midAngle - 90) * Math.PI) / 180;
-              const labelX = HALF + Math.cos(radMid) * (HALF * 0.68);
-              const labelY = HALF + Math.sin(radMid) * (HALF * 0.68);
-
-              return (
-                <div key={menu}>
-                  <svg
-                    className="absolute inset-0"
-                    width={WHEEL_SIZE}
-                    height={WHEEL_SIZE}
-                    viewBox={`0 0 ${WHEEL_SIZE} ${WHEEL_SIZE}`}
-                  >
+            {/* 바퀴 */}
+            <div
+              className="rounded-full relative overflow-hidden"
+              style={{
+                width: wheelSize,
+                height: wheelSize,
+                transform: `rotate(${rotation}deg)`,
+                transition: spinning
+                  ? "transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)"
+                  : "none",
+              }}
+            >
+              <svg
+                className="absolute inset-0"
+                width={wheelSize}
+                height={wheelSize}
+                viewBox={`0 0 ${wheelSize} ${wheelSize}`}
+              >
+                {menus.map((_, i) => {
+                  const startAngle = i * segmentAngle;
+                  return (
                     <path
-                      d={describeArc(HALF, HALF, HALF, startAngle, startAngle + segmentAngle)}
-                      fill={WHEEL_COLORS[i % WHEEL_COLORS.length]}
-                      stroke="white"
-                      strokeWidth="2"
+                      key={i}
+                      d={describeArc(half, half, half, startAngle, startAngle + segmentAngle)}
+                      fill={SEGMENT_COLORS[i % SEGMENT_COLORS.length]}
+                      stroke="rgba(255,255,255,0.5)"
+                      strokeWidth="1.5"
                     />
-                  </svg>
+                  );
+                })}
+              </svg>
+
+              {/* 라벨 */}
+              {menus.map((menu, i) => {
+                const startAngle = i * segmentAngle;
+                const midAngle = startAngle + segmentAngle / 2;
+                const radMid = ((midAngle - 90) * Math.PI) / 180;
+                const labelX = half + Math.cos(radMid) * (half * 0.66);
+                const labelY = half + Math.sin(radMid) * (half * 0.66);
+
+                return (
                   <div
+                    key={menu}
                     className="absolute pointer-events-none"
                     style={{
                       left: labelX,
@@ -187,17 +223,31 @@ export default function MenuRoulette() {
                       transform: `translate(-50%, -50%) rotate(${midAngle}deg)`,
                     }}
                   >
-                    <span className="text-[13px] font-bold text-white drop-shadow-md whitespace-nowrap">
+                    <span
+                      className="font-bold text-white whitespace-nowrap"
+                      style={{
+                        fontSize: wheelSize < 320 ? 9 : wheelSize < 400 ? 11 : 13,
+                        textShadow: "0 1px 3px rgba(0,0,0,0.3)",
+                      }}
+                    >
                       {menu}
                     </span>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
 
-            {/* 가운데 원 */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-white rounded-full shadow-lg z-10 flex items-center justify-center text-3xl">
-              {selectedCategory.emoji}
+              {/* 가운데 원 */}
+              <div
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-full z-10 flex items-center justify-center"
+                style={{
+                  width: wheelSize < 320 ? 42 : wheelSize < 400 ? 54 : 66,
+                  height: wheelSize < 320 ? 42 : wheelSize < 400 ? 54 : 66,
+                  fontSize: wheelSize < 320 ? 20 : wheelSize < 400 ? 26 : 32,
+                  boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+                }}
+              >
+                {selectedCategory.emoji}
+              </div>
             </div>
           </div>
         </div>
@@ -206,10 +256,10 @@ export default function MenuRoulette() {
         <button
           onClick={spin}
           disabled={spinning}
-          className={`px-12 py-3.5 rounded-full text-white font-bold text-lg shadow-lg transition-all ${
+          className={`px-8 sm:px-12 py-3 sm:py-3.5 rounded-full text-white font-bold text-base sm:text-lg transition-all duration-200 ${
             spinning
-              ? "bg-gray-400 cursor-not-allowed"
-              : "bg-red-500 hover:bg-red-600 hover:scale-105 active:scale-95"
+              ? "bg-gray-300 cursor-not-allowed"
+              : "bg-gray-900 hover:bg-gray-800 active:scale-95"
           }`}
         >
           {spinning ? "돌리는 중..." : "돌리기!"}
@@ -217,12 +267,12 @@ export default function MenuRoulette() {
 
         {/* 결과 */}
         {result && (
-          <div className="mt-8 text-center animate-popup-in">
-            <p className="text-gray-500 text-sm mb-1">오늘의 추천 메뉴는</p>
-            <p className="text-4xl font-extrabold text-red-500 mb-1">
+          <div className="mt-6 md:mt-8 text-center animate-popup-in">
+            <p className="text-gray-400 text-xs sm:text-sm mb-2">오늘의 추천 메뉴는</p>
+            <p className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-1">
               {result}
             </p>
-            <p className="text-gray-400 text-sm">맛있게 드세요!</p>
+            <p className="text-gray-400 text-xs sm:text-sm mt-2">맛있게 드세요!</p>
           </div>
         )}
       </div>

@@ -16,16 +16,16 @@ function HomePage() {
   return (
     <div className="flex-1 overflow-y-auto bg-white">
       {/* 히어로 배너 */}
-      <div className="max-w-[900px] mx-auto px-6 pt-6">
-        <div className="w-full h-[240px] bg-gray-200 rounded-2xl" />
+      <div className="max-w-[900px] mx-auto px-4 md:px-6 pt-4 md:pt-6">
+        <div className="w-full h-[140px] sm:h-[180px] md:h-[240px] bg-gray-200 rounded-2xl" />
       </div>
 
       {/* 지금 인기 장소 */}
-      <section className="max-w-[900px] mx-auto px-6 pt-12 pb-4">
-        <h2 className="text-2xl font-bold text-red-400 text-center mb-10">
+      <section className="max-w-[900px] mx-auto px-4 md:px-6 pt-8 md:pt-12 pb-4">
+        <h2 className="text-xl md:text-2xl font-bold text-red-400 text-center mb-6 md:mb-10">
           지금 인기 장소
         </h2>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {dummyPlaces.slice(0, 3).map((place) => (
             <div key={place.id} className="group cursor-pointer">
               <div className="aspect-[4/3] bg-gray-200 rounded-xl mb-2" />
@@ -41,11 +41,11 @@ function HomePage() {
       </section>
 
       {/* 새로운 맛집 발견! */}
-      <section className="max-w-[900px] mx-auto px-6 pt-10 pb-12">
-        <h2 className="text-2xl font-bold text-red-400 text-center mb-8">
+      <section className="max-w-[900px] mx-auto px-4 md:px-6 pt-8 md:pt-10 pb-8 md:pb-12">
+        <h2 className="text-xl md:text-2xl font-bold text-red-400 text-center mb-6 md:mb-8">
           새로운 맛집 발견!
         </h2>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {dummyPlaces.slice(0, 3).map((place) => (
             <div
               key={place.id}
@@ -146,19 +146,19 @@ export default function Home() {
         className="bg-white border-b border-gray-200 shrink-0"
         style={{ height: HEADER_HEIGHT }}
       >
-        <div className="max-w-[900px] mx-auto h-full flex items-center justify-center gap-10 relative">
+        <div className="max-w-[900px] mx-auto h-full flex items-center justify-center gap-3 sm:gap-6 md:gap-10 px-4 md:px-6 relative">
           <h1
-            className="text-xl font-extrabold text-red-500 tracking-wider cursor-pointer shrink-0"
+            className="text-lg md:text-xl font-extrabold text-red-500 tracking-wider cursor-pointer shrink-0"
             onClick={() => handleTabChange("홈")}
           >
             배부룩
           </h1>
-          <nav className="flex items-center h-full gap-10">
+          <nav className="flex items-center h-full gap-3 sm:gap-6 md:gap-10 overflow-x-auto">
             {tabs.map((tab) => (
               <button
                 key={tab}
                 onClick={() => handleTabChange(tab)}
-                className={`relative h-full text-[15px] font-medium transition-colors ${
+                className={`relative h-full text-xs sm:text-[13px] md:text-[15px] font-medium transition-colors whitespace-nowrap ${
                   tab === activeTab
                     ? "text-red-500"
                     : "text-gray-500 hover:text-gray-800"
@@ -171,7 +171,7 @@ export default function Home() {
               </button>
             ))}
           </nav>
-          <button className="absolute right-0 text-xs text-gray-500 border border-gray-300 px-3 py-1.5 rounded-md hover:bg-gray-50 transition-colors">
+          <button className="absolute right-4 md:right-0 hidden sm:block text-xs text-gray-500 border border-gray-300 px-3 py-1.5 rounded-md hover:bg-gray-50 transition-colors">
             로그인
           </button>
         </div>

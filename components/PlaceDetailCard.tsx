@@ -16,8 +16,8 @@ export default function PlaceDetailCard({ place, onClose }: PlaceDetailCardProps
       {/* 배경 클릭 시 닫기 */}
       <div className="absolute inset-0 z-40" onClick={onClose} />
 
-      {/* 플로팅 팝업 카드 */}
-      <div className="absolute right-4 top-4 bottom-4 w-[340px] bg-white rounded-2xl shadow-xl z-50 animate-popup-in overflow-y-auto">
+      {/* 플로팅 팝업 카드 - 모바일: 하단 시트 / 데스크톱: 우측 패널 */}
+      <div className="absolute left-0 right-0 bottom-0 h-[60vh] md:left-auto md:right-4 md:top-4 md:bottom-4 md:h-auto md:w-[340px] bg-white rounded-t-2xl md:rounded-2xl shadow-xl z-50 animate-slide-up md:animate-popup-in overflow-y-auto">
         {/* 카테고리 + 하트 */}
         <div className="flex items-center justify-between px-5 pt-5 pb-2">
           <span className="inline-block px-3 py-1 bg-blue-50 text-blue-600 text-xs font-semibold rounded-md">

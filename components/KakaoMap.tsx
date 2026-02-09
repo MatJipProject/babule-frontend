@@ -10,6 +10,35 @@ interface KakaoMapComponentProps {
   onMapReady?: () => void;
 }
 
+// 맛집 핀 마커 (코랄)
+const PLACE_PIN_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="30" height="42" viewBox="0 0 30 42">
+  <path d="M15 40C15 40 28.5 25 28.5 15C28.5 7.54 22.46 1.5 15 1.5C7.54 1.5 1.5 7.54 1.5 15C1.5 25 15 40 15 40Z" fill="%23F87171" stroke="white" stroke-width="1.5"/>
+  <circle cx="15" cy="15" r="5.5" fill="white"/>
+  <circle cx="15" cy="15" r="2.5" fill="%23F87171"/>
+</svg>`;
+
+// 현재 위치 핀 마커 (블루 + 사람 아이콘)
+const CURRENT_PIN_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="30" height="42" viewBox="0 0 30 42">
+  <path d="M15 40C15 40 28.5 25 28.5 15C28.5 7.54 22.46 1.5 15 1.5C7.54 1.5 1.5 7.54 1.5 15C1.5 25 15 40 15 40Z" fill="%237DD3FC" stroke="white" stroke-width="1.5"/>
+  <defs><clipPath id="cp"><circle cx="15" cy="15" r="5.5"/></clipPath></defs>
+  <circle cx="15" cy="15" r="5.5" fill="white"/>
+  <circle cx="15" cy="12.8" r="2" fill="%230EA5E9" clip-path="url(%23cp)"/>
+  <ellipse cx="15" cy="19.5" rx="3.8" ry="2.8" fill="%230EA5E9" clip-path="url(%23cp)"/>
+</svg>`;
+
+function createMarkerImage(svg: string, w: number, h: number) {
+  const uri = `data:image/svg+xml;charset=utf-8,${svg}`;
+  return (kakao: any) =>
+    new kakao.maps.MarkerImage(
+      uri,
+      new kakao.maps.Size(w, h),
+      { offset: new kakao.maps.Point(w / 2, h) },
+    );
+}
+
+const placeMarkerImage = createMarkerImage(PLACE_PIN_SVG, 30, 42);
+const currentMarkerImage = createMarkerImage(CURRENT_PIN_SVG, 30, 42);
+
 export default function KakaoMapComponent({
   places,
   onPlaceClick,
@@ -129,10 +158,7 @@ export default function KakaoMapComponent({
           currentLocation.lng,
         ),
         map: mapInstanceRef.current,
-        image: new window.kakao.maps.MarkerImage(
-          "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png",
-          new window.kakao.maps.Size(24, 35),
-        ),
+        image: currentMarkerImage(window.kakao),
       });
 
       currentLocationMarkerRef.current = currentMarker;
@@ -170,6 +196,7 @@ export default function KakaoMapComponent({
         const marker = new window.kakao.maps.Marker({
           position: markerPosition,
           map: mapInstanceRef.current,
+          image: placeMarkerImage(window.kakao),
         });
 
         window.kakao.maps.event.addListener(marker, "click", () => {
@@ -187,12 +214,11 @@ export default function KakaoMapComponent({
   }, [places, onPlaceClick, mapInitialized]);
 
   return (
-    <div className="w-full h-full relative" style={{ minHeight: "400px" }}>
+    <div className="w-full h-full relative min-h-[250px] sm:min-h-[300px] md:min-h-[400px]">
       {/* 지도 div는 항상 렌더링 (숨겨져 있어도 ref가 연결되어야 초기화 가능) */}
       <div
         ref={mapRef}
-        className="w-full h-full"
-        style={{ minHeight: "400px" }}
+        className="w-full h-full min-h-[250px] sm:min-h-[300px] md:min-h-[400px]"
       />
 
       {/* 로딩 오버레이 */}
