@@ -8,6 +8,7 @@ interface KakaoMapComponentProps {
   onPlaceClick?: (place: PlaceData) => void;
   currentLocation?: { lat: number; lng: number } | null;
   onMapReady?: () => void;
+  focusPlace?: PlaceData | null;
 }
 
 // 맛집 핀 마커 (코랄)
@@ -44,6 +45,7 @@ export default function KakaoMapComponent({
   onPlaceClick,
   currentLocation,
   onMapReady,
+  focusPlace,
 }: KakaoMapComponentProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
@@ -171,6 +173,14 @@ export default function KakaoMapComponent({
       console.error("현재 위치 마커 생성 실패:", err);
     }
   }, [currentLocation, mapInitialized]);
+
+  // focusPlace 변경 시 해당 위치로 이동
+  useEffect(() => {
+    if (!mapInitialized || !mapInstanceRef.current || !focusPlace || !window.kakao) return;
+    const position = new window.kakao.maps.LatLng(focusPlace.lat, focusPlace.lng);
+    mapInstanceRef.current.setCenter(position);
+    mapInstanceRef.current.setLevel(3);
+  }, [focusPlace, mapInitialized]);
 
   // 장소 마커 업데이트
   useEffect(() => {

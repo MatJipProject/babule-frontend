@@ -12,67 +12,228 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-@keyframes slideInRight {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
+/* ===== 기존 애니메이션 ===== */
 
-.animate-slide-in-right {
-  animation: slideInRight 0.3s ease-out forwards;
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
 }
+.animate-slide-in-right { animation: slideInRight 0.3s ease-out forwards; }
 
 @keyframes popupIn {
-  from {
-    transform: translateY(12px) scale(0.97);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
+  from { transform: translateY(12px) scale(0.97); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
 }
-
-.animate-popup-in {
-  animation: popupIn 0.25s ease-out forwards;
-}
+.animate-popup-in { animation: popupIn 0.25s ease-out forwards; }
 
 @keyframes slideUp {
-  from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: translateY(0);
-  }
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
 }
-
-.animate-slide-up {
-  animation: slideUp 0.3s ease-out forwards;
-}
+.animate-slide-up { animation: slideUp 0.3s ease-out forwards; }
 
 @keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
-
-.animate-fade-in-up {
-  opacity: 0;
-  animation: fadeInUp 0.5s ease-out forwards;
-}
+.animate-fade-in-up { opacity: 0; animation: fadeInUp 0.5s ease-out forwards; }
 
 .animate-delay-1 { animation-delay: 0.1s; }
 .animate-delay-2 { animation-delay: 0.2s; }
 .animate-delay-3 { animation-delay: 0.3s; }
 .animate-delay-4 { animation-delay: 0.4s; }
 .animate-delay-5 { animation-delay: 0.5s; }
+
+/* ===== 히어로 섹션 펼쳐지는 애니메이션 ===== */
+
+.hero-section {
+  transition: max-height 1s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s ease-out;
+}
+.hero-collapsed { max-height: 0; opacity: 0; }
+.hero-expanded { max-height: 500px; opacity: 1; }
+
+/* ===== 히어로 스와이퍼 ===== */
+
+.hero-swiper { height: 100%; position: relative; }
+.hero-swiper .swiper { height: 100%; }
+
+.hero-swiper .swiper-pagination {
+  bottom: 14px !important;
+  left: 20px !important;
+  right: auto !important;
+  width: auto !important;
+  display: flex;
+  gap: 6px;
+}
+.hero-swiper .swiper-pagination-bullet {
+  width: 20px; height: 3px; border-radius: 2px;
+  background: rgba(255,255,255,0.35); opacity: 1;
+  transition: all 0.4s ease; margin: 0 !important;
+}
+.hero-swiper .swiper-pagination-bullet-active {
+  background: #fff; width: 36px;
+}
+@media (min-width: 768px) {
+  .hero-swiper .swiper-pagination {
+    left: calc(50% - 450px + 32px) !important;
+  }
+}
+
+/* ===== 스크롤바 숨기기 ===== */
+
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+
+/* ===== 저장된 맛집 스와이퍼 ===== */
+
+.saved-swiper .swiper-pagination { bottom: 0 !important; }
+.saved-swiper .swiper-pagination-bullet {
+  width: 20px; height: 3px; border-radius: 2px;
+  background: #e5e7eb; opacity: 1;
+  transition: all 0.4s ease; margin: 0 3px !important;
+}
+.saved-swiper .swiper-pagination-bullet-active {
+  background: #E8513D; width: 32px;
+}
+
+/* ===== 메뉴 섹션 장식 ===== */
+
+.menu-crave-section::before {
+  content: ''; position: absolute; top: -40px; right: -40px;
+  width: 200px; height: 200px;
+  background: rgba(255,255,255,0.05); border-radius: 50%;
+}
+.menu-crave-section::after {
+  content: ''; position: absolute; bottom: -60px; left: -30px;
+  width: 160px; height: 160px;
+  background: rgba(255,255,255,0.05); border-radius: 50%;
+}
+
+/* ============================================
+   NEW: 화려한 애니메이션 섹션들
+   ============================================ */
+
+/* ===== 무한 마퀴 (리뷰 티커) ===== */
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 40s linear infinite;
+}
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+
+.marquee-track-reverse {
+  display: flex;
+  width: max-content;
+  animation: marquee 35s linear infinite reverse;
+}
+.marquee-track-reverse:hover {
+  animation-play-state: paused;
+}
+
+/* ===== 랭킹 프로그레스 바 ===== */
+
+@keyframes barGrow {
+  from { width: 0; }
+}
+
+.rank-bar {
+  transition: width 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.rank-bar-animate {
+  animation: barGrow 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* ===== 숫자 카운트업 글로우 ===== */
+
+@keyframes pulseGlow {
+  0%, 100% { text-shadow: 0 0 20px rgba(232, 81, 61, 0.3); }
+  50% { text-shadow: 0 0 40px rgba(232, 81, 61, 0.6), 0 0 80px rgba(232, 81, 61, 0.2); }
+}
+
+.stat-number {
+  animation: pulseGlow 3s ease-in-out infinite;
+}
+
+/* ===== 플로팅 파티클 ===== */
+
+@keyframes float1 {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  25% { transform: translate(10px, -20px) rotate(5deg); }
+  50% { transform: translate(-5px, -35px) rotate(-3deg); }
+  75% { transform: translate(15px, -15px) rotate(4deg); }
+}
+@keyframes float2 {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  25% { transform: translate(-15px, -25px) rotate(-5deg); }
+  50% { transform: translate(10px, -40px) rotate(3deg); }
+  75% { transform: translate(-10px, -20px) rotate(-4deg); }
+}
+@keyframes float3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(5px, -30px) scale(1.1); }
+}
+
+.float-particle-1 { animation: float1 6s ease-in-out infinite; }
+.float-particle-2 { animation: float2 7s ease-in-out infinite; }
+.float-particle-3 { animation: float3 5s ease-in-out infinite; }
+
+/* ===== 스크롤 트리거 페이드인 ===== */
+
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.scroll-reveal.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.scroll-reveal-left {
+  opacity: 0;
+  transform: translateX(-60px);
+  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+.scroll-reveal-left.revealed {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.scroll-reveal-right {
+  opacity: 0;
+  transform: translateX(60px);
+  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+.scroll-reveal-right.revealed {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* ===== 카드 호버 ===== */
+
+.rank-card {
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+/* ===== 배경 그라데이션 애니메이션 ===== */
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animated-gradient {
+  background-size: 200% 200%;
+  animation: gradientShift 8s ease infinite;
+}
