@@ -11,6 +11,7 @@ export interface Review {
 // 맛집 데이터 (API 응답 구조 대비)
 export interface PlaceData {
   id: string;
+  apiId?: number;          // API 레스토랑 ID (API 연동 시 사용)
   name: string;
   lat: number;
   lng: number;

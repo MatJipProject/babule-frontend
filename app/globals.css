@@ -88,12 +88,24 @@ body {
 
 .saved-swiper .swiper-pagination { bottom: 0 !important; }
 .saved-swiper .swiper-pagination-bullet {
-  width: 20px; height: 3px; border-radius: 2px;
-  background: #e5e7eb; opacity: 1;
-  transition: all 0.4s ease; margin: 0 3px !important;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #d1d5db; opacity: 1;
+  transition: all 0.3s ease; margin: 0 2px !important;
 }
-.saved-swiper .swiper-pagination-bullet-active {
-  background: #E8513D; width: 32px;
+.saved-swiper .swiper-pagination-bullet-active,
+.saved-swiper .swiper-pagination-bullet-active-main {
+  background: #E8513D; width: 18px; border-radius: 3px;
+}
+.saved-swiper .swiper-pagination-bullets-dynamic {
+  overflow: visible;
+}
+.saved-swiper .swiper-pagination-bullet-active-prev,
+.saved-swiper .swiper-pagination-bullet-active-next {
+  transform: scale(0.8);
+}
+.saved-swiper .swiper-pagination-bullet-active-prev-prev,
+.saved-swiper .swiper-pagination-bullet-active-next-next {
+  transform: scale(0.5);
 }
 
 /* ===== 메뉴 섹션 장식 ===== */

@@ -1,79 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
-
-interface Category {
-  name: string;
-  emoji: string;
-  menus: string[];
-}
-
-const CATEGORIES: Category[] = [
-  {
-    name: "한식",
-    emoji: "🍚",
-    menus: ["김치찌개", "된장찌개", "비빔밥", "불고기", "삼겹살", "갈비탕", "냉면", "제육볶음"],
-  },
-  {
-    name: "중식",
-    emoji: "🥟",
-    menus: ["짜장면", "짬뽕", "탕수육", "마파두부", "볶음밥", "깐풍기", "양장피", "마라탕"],
-  },
-  {
-    name: "일식",
-    emoji: "🍣",
-    menus: ["초밥", "라멘", "우동", "돈카츠", "카레", "사시미", "오코노미야끼", "소바"],
-  },
-  {
-    name: "양식",
-    emoji: "🍝",
-    menus: ["파스타", "스테이크", "리조또", "피자", "햄버거", "오믈렛", "그라탕", "샐러드"],
-  },
-  {
-    name: "분식",
-    emoji: "🍜",
-    menus: ["떡볶이", "순대", "김밥", "라볶이", "튀김", "어묵", "쫄면", "비빔국수"],
-  },
-  {
-    name: "카페/디저트",
-    emoji: "☕",
-    menus: ["아메리카노", "카페라떼", "케이크", "마카롱", "와플", "빙수", "스무디", "크로플"],
-  },
-  {
-    name: "치킨",
-    emoji: "🍗",
-    menus: ["후라이드", "양념치킨", "간장치킨", "마늘치킨", "허니버터", "불닭", "반반치킨", "순살치킨"],
-  },
-  {
-    name: "야식",
-    emoji: "🌙",
-    menus: ["족발", "보쌈", "곱창", "회", "닭발", "떡볶이", "라면", "치즈볼"],
-  },
-];
-
-// 채도 낮추고 톤 맞춘 파스텔 팔레트
-const SEGMENT_COLORS = [
-  "#F87171", "#FB923C", "#FBBF24", "#34D399",
-  "#60A5FA", "#A78BFA", "#F472B6", "#38BDF8",
-];
-
-function useWheelSize() {
-  const [size, setSize] = useState(400);
-
-  useEffect(() => {
-    const update = () => {
-      const w = window.innerWidth;
-      if (w < 640) setSize(260);
-      else if (w < 768) setSize(320);
-      else setSize(400);
-    };
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, []);
-
-  return size;
-}
+import { useState } from "react";
+import { MENU_CATEGORIES, SEGMENT_COLORS } from "@/data/constants";
+import type { MenuCategory } from "@/data/constants";
+import { useWheelSize } from "@/hooks/useWheelSize";
+import { describeArc } from "@/utils/svg";
 
 interface MenuRouletteProps {
   onFindPlaces?: (menu: string) => void;
@@ -82,12 +13,12 @@ interface MenuRouletteProps {
 export default function MenuRoulette({ onFindPlaces }: MenuRouletteProps = {}) {
   const wheelSize = useWheelSize();
   const half = wheelSize / 2;
-  const [selectedCategory, setSelectedCategory] = useState<Category>(CATEGORIES[0]);
+  const [selectedCategory, setSelectedCategory] = useState<MenuCategory>(MENU_CATEGORIES[0]);
   const [spinning, setSpinning] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [rotation, setRotation] = useState(0);
 
-  const handleCategorySelect = (category: Category) => {
+  const handleCategorySelect = (category: MenuCategory) => {
     if (spinning) return;
     setSelectedCategory(category);
     setResult(null);
@@ -136,7 +67,7 @@ export default function MenuRoulette({ onFindPlaces }: MenuRouletteProps = {}) {
 
         {/* 카테고리 선택 */}
         <div className="flex gap-1.5 sm:gap-2 mb-6 md:mb-10 flex-wrap justify-center max-w-[520px]">
-          {CATEGORIES.map((cat) => (
+          {MENU_CATEGORIES.map((cat) => (
             <button
               key={cat.name}
               onClick={() => handleCategorySelect(cat)}
@@ -312,21 +243,4 @@ export default function MenuRoulette({ onFindPlaces }: MenuRouletteProps = {}) {
       </div>
     </div>
   );
-}
-
-function describeArc(
-  cx: number,
-  cy: number,
-  r: number,
-  startAngle: number,
-  endAngle: number,
-) {
-  const startRad = ((startAngle - 90) * Math.PI) / 180;
-  const endRad = ((endAngle - 90) * Math.PI) / 180;
-  const x1 = cx + r * Math.cos(startRad);
-  const y1 = cy + r * Math.sin(startRad);
-  const x2 = cx + r * Math.cos(endRad);
-  const y2 = cy + r * Math.sin(endRad);
-  const largeArc = endAngle - startAngle > 180 ? 1 : 0;
-  return `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z`;
 }

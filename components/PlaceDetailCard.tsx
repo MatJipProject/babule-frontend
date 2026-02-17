@@ -3,28 +3,15 @@
 import { useState } from 'react';
 import type { PlaceData } from '@/types/kakao';
 import { getCategoryEmoji } from '@/data/constants';
+import StarRating from '@/components/StarRating';
 
 interface PlaceDetailCardProps {
   place: PlaceData;
   onClose: () => void;
+  isLoggedIn?: boolean;
 }
 
-function StarRating({ rating }: { rating: number }) {
-  return (
-    <span className="inline-flex gap-0.5">
-      {[1, 2, 3, 4, 5].map((star) => (
-        <span
-          key={star}
-          className={`text-xs ${star <= rating ? 'text-yellow-400' : 'text-gray-200'}`}
-        >
-          ★
-        </span>
-      ))}
-    </span>
-  );
-}
-
-export default function PlaceDetailCard({ place, onClose }: PlaceDetailCardProps) {
+export default function PlaceDetailCard({ place, onClose, isLoggedIn }: PlaceDetailCardProps) {
   const [liked, setLiked] = useState(false);
   const [showAllReviews, setShowAllReviews] = useState(false);
 
@@ -174,6 +161,11 @@ export default function PlaceDetailCard({ place, onClose }: PlaceDetailCardProps
               리뷰 {reviews.length > 0 ? `(${reviews.length})` : ''}
             </h4>
           </div>
+
+          {/* 비로그인 시 안내 */}
+          {!isLoggedIn && (
+            <p className="text-xs text-gray-400 mb-3">로그인하면 리뷰를 작성할 수 있어요</p>
+          )}
 
           {reviews.length > 0 ? (
             <div className="space-y-2.5">

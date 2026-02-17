@@ -2,38 +2,13 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import type { PlaceData } from "@/types/kakao";
+import { PLACE_PIN_SVG, CURRENT_PIN_SVG, createMarkerImage } from "@/utils/svg";
 
 interface KakaoMapComponentProps {
   places: PlaceData[];
   onPlaceClick?: (place: PlaceData) => void;
   currentLocation?: { lat: number; lng: number } | null;
   focusPlace?: PlaceData | null;
-}
-
-// 맛집 핀 마커 (코랄)
-const PLACE_PIN_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="30" height="42" viewBox="0 0 30 42">
-  <path d="M15 40C15 40 28.5 25 28.5 15C28.5 7.54 22.46 1.5 15 1.5C7.54 1.5 1.5 7.54 1.5 15C1.5 25 15 40 15 40Z" fill="%23F87171" stroke="white" stroke-width="1.5"/>
-  <circle cx="15" cy="15" r="5.5" fill="white"/>
-  <circle cx="15" cy="15" r="2.5" fill="%23F87171"/>
-</svg>`;
-
-// 현재 위치 핀 마커 (블루 + 사람 아이콘)
-const CURRENT_PIN_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="30" height="42" viewBox="0 0 30 42">
-  <path d="M15 40C15 40 28.5 25 28.5 15C28.5 7.54 22.46 1.5 15 1.5C7.54 1.5 1.5 7.54 1.5 15C1.5 25 15 40 15 40Z" fill="%237DD3FC" stroke="white" stroke-width="1.5"/>
-  <defs><clipPath id="cp"><circle cx="15" cy="15" r="5.5"/></clipPath></defs>
-  <circle cx="15" cy="15" r="5.5" fill="white"/>
-  <circle cx="15" cy="12.8" r="2" fill="%230EA5E9" clip-path="url(%23cp)"/>
-  <ellipse cx="15" cy="19.5" rx="3.8" ry="2.8" fill="%230EA5E9" clip-path="url(%23cp)"/>
-</svg>`;
-
-function createMarkerImage(svg: string, w: number, h: number) {
-  const uri = `data:image/svg+xml;charset=utf-8,${svg}`;
-  return (kakao: any) =>
-    new kakao.maps.MarkerImage(
-      uri,
-      new kakao.maps.Size(w, h),
-      { offset: new kakao.maps.Point(w / 2, h) },
-    );
 }
 
 const placeMarkerImage = createMarkerImage(PLACE_PIN_SVG, 30, 42);
