@@ -141,21 +141,25 @@ export default function KakaoMapComponent({
 
       currentLocationMarkerRef.current = currentMarker;
 
-      // 지도 중심 이동
-      mapInstanceRef.current.setCenter(
-        new window.kakao.maps.LatLng(currentLocation.lat, currentLocation.lng),
-      );
+      // focusPlace가 없을 때만 현재 위치로 중심 이동
+      if (!focusPlace) {
+        mapInstanceRef.current.setCenter(
+          new window.kakao.maps.LatLng(currentLocation.lat, currentLocation.lng),
+        );
+      }
     } catch (err) {
       console.error("현재 위치 마커 생성 실패:", err);
     }
-  }, [currentLocation, mapInitialized]);
+  }, [currentLocation, mapInitialized, focusPlace]);
 
   // focusPlace 변경 시 해당 위치로 이동
   useEffect(() => {
     if (!mapInitialized || !mapInstanceRef.current || !focusPlace || !window.kakao) return;
     const position = new window.kakao.maps.LatLng(focusPlace.lat, focusPlace.lng);
+    // 지역 중심 이동일 때 약간 넓은 뷰(level 4), 개별 장소일 때 가까이(level 3)
+    const level = focusPlace.id === "center" ? 4 : 3;
     mapInstanceRef.current.setCenter(position);
-    mapInstanceRef.current.setLevel(3);
+    mapInstanceRef.current.setLevel(level);
   }, [focusPlace, mapInitialized]);
 
   // 장소 마커 업데이트

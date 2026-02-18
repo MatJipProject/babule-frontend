@@ -110,7 +110,7 @@ export default function Home() {
   const renderContent = () => {
     switch (activeTab) {
       case "홈":
-        return <HomePage onNavigateToPlace={handleNavigateToPlace} onTabChange={handleTabChange} />;
+        return <HomePage onNavigateToPlace={handleNavigateToPlace} onTabChange={handleTabChange} onNavigateToRegion={handleNavigateToRegion} />;
       case "맛집 지도": {
         const mapPlaces = mapFilterRegion === "전체"
           ? dummyPlaces
