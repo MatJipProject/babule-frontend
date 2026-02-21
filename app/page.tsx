@@ -14,6 +14,12 @@ import { tabHashMap, hashTabMap } from "@/data/constants";
 import type { Tab } from "@/data/constants";
 import type { PlaceData } from "@/types/kakao";
 import { useAuth } from "@/hooks/useAuth";
+import { getRestaurantDetail, getReviews } from "@/utils/api";
+import {
+  mapDetailToPlaceData,
+  mapReviewResponse,
+} from "@/utils/mappers";
+import { RestaurantDetailResponse } from "@/types/api";
 
 // Swiper CSS를 최상위에서 로드 (HomePage 렌더 전 스타일 적용 보장)
 import "swiper/css";
@@ -91,6 +97,24 @@ export default function Home() {
     }
   }, []);
 
+  const handleReviewAdded = async () => {
+    if (!selectedPlace || !selectedPlace.apiId) return;
+
+    try {
+      const [detailRes, reviewsRes] = await Promise.all([
+        getRestaurantDetail(selectedPlace.apiId),
+        getReviews(selectedPlace.apiId),
+      ]);
+
+      const updatedPlace = mapDetailToPlaceData(detailRes);
+      updatedPlace.reviews = reviewsRes.map(mapReviewResponse);
+
+      setSelectedPlace(updatedPlace);
+    } catch (error) {
+      console.error("Failed to refresh place data after review:", error);
+    }
+  };
+
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -146,6 +170,7 @@ export default function Home() {
                 place={selectedPlace}
                 onClose={() => setSelectedPlace(null)}
                 isLoggedIn={auth.isLoggedIn}
+                onReviewAdded={handleReviewAdded}
               />
             )}
           </div>

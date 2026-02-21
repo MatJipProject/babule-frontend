@@ -3,6 +3,7 @@
 import { tabs, HEADER_HEIGHT } from "@/data/constants";
 import type { Tab } from "@/data/constants";
 import type { UserResponse } from "@/types/api";
+import { useRouter } from "next/navigation";
 
 interface HeaderProps {
   activeTab: Tab;
@@ -12,6 +13,12 @@ interface HeaderProps {
 }
 
 export default function Header({ activeTab, onTabChange, user, isLoggedIn }: HeaderProps) {
+  const router = useRouter();
+
+  const handleAddRestaurantClick = () => {
+    router.push("/add-restaurant");
+  };
+
   return (
     <header
       className="bg-white/80 backdrop-blur-xl border-b border-gray-100 shrink-0 relative z-50 safe-area-top"
@@ -52,6 +59,28 @@ export default function Header({ activeTab, onTabChange, user, isLoggedIn }: Hea
           ))}
         </nav>
         <div className="flex-1" />
+
+        {isLoggedIn && (
+          <button
+            onClick={handleAddRestaurantClick}
+            className="flex items-center gap-1.5 text-xs text-gray-600 bg-gray-50 hover:bg-gray-100 border border-gray-200 px-3.5 py-1.5 rounded-full transition-colors font-medium mr-2"
+          >
+            <svg
+              className="w-3.5 h-3.5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+            맛집 추가
+          </button>
+        )}
 
         {/* 모바일 로그인 상태 아이콘 */}
         {isLoggedIn && user ? (

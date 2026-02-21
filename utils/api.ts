@@ -6,6 +6,7 @@ import type {
   UserResponse,
   ReviewResponse,
   UserCreate,
+  RestaurantReviewCreate,
 } from "@/types/api";
 
 const BASE_URL = "https://api.baebulook.site";
@@ -138,6 +139,23 @@ export async function createReview(
   formData.append("restaurant_id", String(data.restaurant_id));
   formData.append("rating", String(data.rating));
   formData.append("content", data.content);
+
+  if (files) {
+    files.forEach((file) => formData.append("files", file));
+  }
+
+  return apiFetch<ReviewResponse>("/api/v1/reviews/register", {
+    method: "POST",
+    body: formData,
+  });
+}
+
+export async function createRestaurantAndReview(
+  data: RestaurantReviewCreate,
+  files?: File[],
+): Promise<ReviewResponse> {
+  const formData = new FormData();
+  formData.append("request_data", JSON.stringify(data));
 
   if (files) {
     files.forEach((file) => formData.append("files", file));

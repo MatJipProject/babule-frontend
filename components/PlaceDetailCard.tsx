@@ -4,19 +4,32 @@ import { useState } from 'react';
 import type { PlaceData } from '@/types/kakao';
 import { getCategoryEmoji } from '@/data/constants';
 import StarRating from '@/components/StarRating';
+import ReviewForm from './ReviewForm';
+import { createReview } from '@/utils/api';
 
 interface PlaceDetailCardProps {
   place: PlaceData;
   onClose: () => void;
   isLoggedIn?: boolean;
+  onReviewAdded?: () => void;
 }
 
-export default function PlaceDetailCard({ place, onClose, isLoggedIn }: PlaceDetailCardProps) {
+export default function PlaceDetailCard({ place, onClose, isLoggedIn, onReviewAdded }: PlaceDetailCardProps) {
   const [liked, setLiked] = useState(false);
   const [showAllReviews, setShowAllReviews] = useState(false);
 
   const reviews = place.reviews || [];
   const visibleReviews = showAllReviews ? reviews : reviews.slice(0, 2);
+
+  const handleReviewSubmit = async (rating: number, content: string) => {
+    if (!place.id) return;
+    await createReview({
+      restaurant_id: Number(place.id),
+      rating,
+      content,
+    });
+    onReviewAdded?.();
+  };
 
   return (
     <>
@@ -163,8 +176,13 @@ export default function PlaceDetailCard({ place, onClose, isLoggedIn }: PlaceDet
             </h4>
           </div>
 
-          {/* 비로그인 시 안내 */}
-          {!isLoggedIn && (
+          {/* 리뷰 폼 또는 비로그인 안내 */}
+          {isLoggedIn ? (
+            <ReviewForm
+              restaurantId={Number(place.id)}
+              onSubmit={handleReviewSubmit}
+            />
+          ) : (
             <p className="text-xs text-gray-400 mb-3">로그인하면 리뷰를 작성할 수 있어요</p>
           )}
 
