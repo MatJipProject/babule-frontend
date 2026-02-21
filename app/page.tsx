@@ -155,11 +155,20 @@ export default function Home() {
         return <MenuRoulette onFindPlaces={handleFindPlaces} />;
       case "맛집 목록":
         return (
-          <PlaceListPage
-            places={dummyPlaces}
-            onPlaceClick={handleNavigateToPlace}
-            initialSearch={listSearch}
-          />
+          <div className="relative flex-1 flex flex-col overflow-hidden">
+            <PlaceListPage
+              places={dummyPlaces}
+              onPlaceClick={(place) => setSelectedPlace(place)}
+              initialSearch={listSearch}
+            />
+            {selectedPlace && (
+              <PlaceDetailCard
+                place={selectedPlace}
+                onClose={() => setSelectedPlace(null)}
+                isLoggedIn={auth.isLoggedIn}
+              />
+            )}
+          </div>
         );
       case "마이":
         return (

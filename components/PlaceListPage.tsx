@@ -4,8 +4,6 @@ import { useState, useMemo, useEffect } from "react";
 import type { PlaceData } from "@/types/kakao";
 import { regions as areas, categories, getCategoryEmoji } from "@/data/constants";
 
-type SortKey = "rating" | "reviewCount" | "name";
-
 interface PlaceListPageProps {
   places: PlaceData[];
   onPlaceClick: (place: PlaceData) => void;
@@ -14,235 +12,175 @@ interface PlaceListPageProps {
 
 export default function PlaceListPage({ places, onPlaceClick, initialSearch }: PlaceListPageProps) {
   const [search, setSearch] = useState(initialSearch || "");
-
-  useEffect(() => {
-    if (initialSearch) setSearch(initialSearch);
-  }, [initialSearch]);
   const [selectedArea, setSelectedArea] = useState("전체");
   const [selectedCategory, setSelectedCategory] = useState("전체");
-  const [sortBy, setSortBy] = useState<SortKey>("rating");
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [isOnlyFav, setIsOnlyFav] = useState(false);
 
-  const filtered = useMemo(() => {
-    let result = [...places];
-
-    // 검색
-    if (search.trim()) {
-      const q = search.trim().toLowerCase();
-      result = result.filter(
-        (p) =>
-          p.name.toLowerCase().includes(q) ||
-          p.category.toLowerCase().includes(q) ||
-          p.address?.toLowerCase().includes(q) ||
-          p.tags?.some((t) => t.toLowerCase().includes(q)),
-      );
+  useEffect(() => {
+    const saved = localStorage.getItem("hungry-favorites");
+    if (saved) {
+      try {
+        setFavorites(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to parse favorites", e);
+      }
     }
+  }, []);
 
-    // 지역
-    if (selectedArea !== "전체") {
-      result = result.filter((p) => p.area === selectedArea);
-    }
+  useEffect(() => {
+    if (initialSearch !== undefined) setSearch(initialSearch);
+  }, [initialSearch]);
 
-    // 카테고리
-    if (selectedCategory !== "전체") {
-      result = result.filter((p) => p.category === selectedCategory);
-    }
-
-    // 정렬
-    result.sort((a, b) => {
-      if (sortBy === "rating") return (b.rating || 0) - (a.rating || 0);
-      if (sortBy === "reviewCount") return (b.reviewCount || 0) - (a.reviewCount || 0);
-      return a.name.localeCompare(b.name);
-    });
-
-    return result;
-  }, [places, search, selectedArea, selectedCategory, sortBy]);
-
-  const sortLabels: Record<SortKey, string> = {
-    rating: "별점순",
-    reviewCount: "리뷰순",
-    name: "이름순",
+  const toggleFavorite = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    const newFavs = favorites.includes(id)
+      ? favorites.filter((fid) => fid !== id)
+      : [...favorites, id];
+    setFavorites(newFavs);
+    localStorage.setItem("hungry-favorites", JSON.stringify(newFavs));
   };
 
+  const filtered = useMemo(() => {
+    return places.filter((p) => {
+      const q = search.toLowerCase();
+      const matchesSearch = !q || p.name.toLowerCase().includes(q) || 
+                            p.category.toLowerCase().includes(q) || 
+                            p.tags?.some(t => t.toLowerCase().includes(q));
+      const matchesArea = selectedArea === "전체" || p.area === selectedArea;
+      const matchesCategory = selectedCategory === "전체" || p.category === selectedCategory;
+      const matchesFav = !isOnlyFav || favorites.includes(p.id);
+      
+      return matchesSearch && matchesArea && matchesCategory && matchesFav;
+    });
+  }, [places, search, selectedArea, selectedCategory, favorites, isOnlyFav]);
+
+  const BRAND = "#E8513D";
+  const BRAND2 = "#F97316";
+
   return (
-    <div className="flex-1 overflow-y-auto bg-gray-50/50">
-      <div className="max-w-[900px] mx-auto px-4 md:px-6 py-6">
-        {/* 헤더 */}
-        <div className="mb-5">
-          <h2 className="text-xl md:text-2xl font-extrabold text-gray-900 tracking-tight mb-0.5">맛집 목록</h2>
-          <p className="text-sm text-gray-400">총 <span className="font-semibold text-[#E8513D]">{filtered.length}</span>곳의 맛집</p>
-        </div>
-
-        {/* 검색 */}
-        <div className="relative mb-4">
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="맛집 이름, 카테고리, 태그, 주소 검색"
-            className="w-full bg-white rounded-xl px-4 py-3 pl-10 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#E8513D]/20 transition-all placeholder:text-gray-300"
-            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06)", border: "1px solid rgba(0,0,0,0.06)" }}
-          />
-          <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          {search && (
+    <div className="flex-1 overflow-y-auto bg-[#F5F4F2] scrollbar-hide">
+      {/* 헤더 필터 영역 */}
+      <div className="sticky top-0 z-30 bg-white border-b border-[#EEEBE6] shadow-sm">
+        <div className="max-w-[600px] mx-auto px-4 pt-5 pb-3">
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-xl font-black text-gray-900">
+              🍽️ <span style={{ color: BRAND }}>맛집</span> 목록
+            </h1>
             <button
-              onClick={() => setSearch("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+              onClick={() => setIsOnlyFav(!isOnlyFav)}
+              className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-all border ${
+                isOnlyFav ? "bg-red-50 border-red-200 text-[#E8513D]" : "bg-white border-gray-200 text-gray-400"
+              }`}
             >
-              <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              {isOnlyFav ? "❤️ 즐겨찾기" : "🤍 즐겨찾기"}
             </button>
-          )}
-        </div>
+          </div>
 
-        {/* 필터 + 정렬 */}
-        <div className="flex flex-col gap-2.5 mb-5">
-          {/* 지역 필터 */}
-          <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
-            {areas.map((area) => (
+          {/* 검색창 */}
+          <div className="relative mb-4">
+            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="맛집 이름, 카테고리, 태그 검색"
+              className="w-full bg-gray-100 border-none rounded-xl py-2.5 pl-10 pr-4 text-sm focus:ring-2 focus:ring-[#E8513D]/20 outline-none"
+            />
+          </div>
+
+          {/* 필터 가로 스크롤 */}
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide mb-1">
+            {areas.map((r) => (
               <button
-                key={area}
-                onClick={() => setSelectedArea(area)}
-                className={`shrink-0 px-3.5 py-2 rounded-full text-xs font-semibold transition-all duration-200 min-h-[36px] active:scale-95 ${
-                  selectedArea === area
-                    ? "bg-[#E8513D] text-white shadow-sm shadow-red-200"
-                    : "bg-white text-gray-500 border border-gray-200 hover:border-gray-300 hover:text-gray-700"
+                key={r}
+                type="button"
+                onClick={() => setSelectedArea(r)}
+                className={`shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-bold transition-all border-none cursor-pointer ${
+                  selectedArea === r 
+                    ? "bg-gradient-to-br from-[#E8513D] to-[#F97316] text-white shadow-sm shadow-orange-100" 
+                    : "bg-gray-100 text-gray-500"
                 }`}
               >
-                {area}
+                {r}
               </button>
             ))}
           </div>
-
-          {/* 카테고리 + 정렬 */}
-          <div className="flex items-center justify-between gap-2 sm:gap-3">
-            <div className="flex gap-1.5 overflow-x-auto scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`shrink-0 px-3.5 py-2 rounded-full text-xs font-semibold transition-all duration-200 min-h-[36px] active:scale-95 ${
-                    selectedCategory === cat
-                      ? "bg-gray-900 text-white"
-                      : "bg-white text-gray-500 border border-gray-200 hover:border-gray-300 hover:text-gray-700"
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-
-            <div className="shrink-0 flex items-center gap-1 bg-white border border-gray-200 rounded-full px-3 py-2 min-h-[36px]">
-              <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
-              </svg>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as SortKey)}
-                className="text-xs text-gray-600 font-medium bg-transparent focus:outline-none appearance-none pr-1 cursor-pointer"
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+            {categories.map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setSelectedCategory(c)}
+                className={`shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-bold border transition-all cursor-pointer ${
+                  selectedCategory === c ? "bg-[#FFF5F3] border-[#E8513D] text-[#E8513D]" : "bg-white border-gray-200 text-gray-400"
+                }`}
               >
-                <option value="rating">별점순</option>
-                <option value="reviewCount">리뷰순</option>
-                <option value="name">이름순</option>
-              </select>
-            </div>
+                {c}
+              </button>
+            ))}
           </div>
         </div>
+      </div>
 
-        {/* 목록 */}
+      <div className="max-w-[600px] mx-auto px-4 py-3">
+        <div className="text-[11px] text-gray-400 mb-3 px-1">
+          총 <strong className="text-gray-900">{filtered.length}</strong>개
+        </div>
+
         {filtered.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-              <svg className="w-7 h-7 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
-            <p className="text-gray-400 text-sm font-medium">검색 결과가 없습니다</p>
-            <p className="text-gray-300 text-xs mt-1">다른 키워드로 검색해보세요</p>
+          <div className="text-center py-24">
+            <div className="text-6xl mb-6">🍽️</div>
+            <p className="font-bold text-gray-700 text-lg">검색 결과가 없어요</p>
+            <p className="text-xs text-gray-400 mt-2">다른 필터나 검색어를 사용해보세요</p>
+            <button
+              onClick={() => { setSearch(""); setSelectedArea("전체"); setSelectedCategory("전체"); setIsOnlyFav(false); }}
+              className="mt-6 px-8 py-3 bg-gradient-to-r from-[#E8513D] to-[#F97316] text-white text-xs font-black rounded-full shadow-xl shadow-orange-100 active:scale-95 transition-transform"
+            >
+              필터 초기화
+            </button>
           </div>
         ) : (
-          <div className="space-y-2.5">
-            {filtered.map((place, idx) => (
+          <div className="grid grid-cols-2 gap-3 pb-20">
+            {filtered.map((place) => (
               <div
                 key={place.id}
                 onClick={() => onPlaceClick(place)}
-                className="bg-white rounded-2xl p-3.5 sm:p-4 cursor-pointer group transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98] active:bg-gray-50/50"
-                style={{
-                  boxShadow: "0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06)",
-                  border: "1px solid rgba(0,0,0,0.04)",
-                  animationDelay: `${idx * 30}ms`,
-                }}
+                className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 active:scale-[0.97] group cursor-pointer border border-gray-50"
               >
-                <div className="flex items-start gap-3">
-                  {/* 이모지 썸네일 */}
-                  <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center shrink-0 group-hover:from-orange-50 group-hover:to-red-50 transition-all duration-300">
-                    <span className="text-xl sm:text-2xl md:text-3xl drop-shadow-sm">
-                      {getCategoryEmoji(place.category)}
-                    </span>
+                {/* 카드 이미지 */}
+                <div className="relative h-[115px] overflow-hidden">
+                  <img
+                    src={place.images?.[0] || "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400"}
+                    alt={place.name}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                  <span className="absolute top-2 left-2 text-[9px] font-black text-white bg-black/40 backdrop-blur-md px-2 py-0.5 rounded-lg border border-white/20">
+                    {place.category}
+                  </span>
+                  <button
+                    onClick={(e) => toggleFavorite(e, place.id)}
+                    className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-white/90 flex items-center justify-center text-xs shadow-md border-none transition-transform active:scale-125"
+                  >
+                    {favorites.includes(place.id) ? "❤️" : "🤍"}
+                  </button>
+                </div>
+
+                {/* 카드 정보 */}
+                <div className="p-3">
+                  <h3 className="text-[12px] font-black text-gray-900 truncate mb-1 group-hover:text-[#E8513D] transition-colors">{place.name}</h3>
+                  <div className="flex items-center gap-1 mb-2">
+                    <span className="text-yellow-400 text-[10px]">★</span>
+                    <span className="text-[10px] font-black text-gray-900">{place.rating?.toFixed(1)}</span>
+                    <span className="text-[9px] text-gray-300">({place.reviewCount})</span>
+                    <span className="ml-auto text-[9px] text-gray-400">📍{place.area}</span>
                   </div>
-
-                  {/* 정보 */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-sm md:text-base font-bold text-gray-900 truncate group-hover:text-[#E8513D] transition-colors">
-                        {place.name}
-                      </h3>
-                      {place.isHot && (
-                        <span className="shrink-0 text-[10px] bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold px-1.5 py-0.5 rounded-full">
-                          HOT
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="flex items-center gap-1.5 mb-1.5">
-                      <span className="text-xs text-gray-400 font-medium">{place.category}</span>
-                      <span className="w-0.5 h-0.5 bg-gray-300 rounded-full" />
-                      <span className="text-xs text-gray-400 font-medium">{place.area}</span>
-                      {place.priceRange && (
-                        <>
-                          <span className="w-0.5 h-0.5 bg-gray-300 rounded-full" />
-                          <span className="text-xs text-gray-400">{place.priceRange}</span>
-                        </>
-                      )}
-                    </div>
-
-                    <p className="text-xs text-gray-400 line-clamp-1 mb-2 leading-relaxed">
-                      {place.review}
-                    </p>
-
-                    {/* 태그 */}
-                    {place.tags && place.tags.length > 0 && (
-                      <div className="flex gap-1 flex-wrap">
-                        {place.tags.slice(0, 3).map((tag) => (
-                          <span
-                            key={tag}
-                            className="text-[10px] bg-gray-50 text-gray-500 px-2 py-0.5 rounded-full font-medium"
-                          >
-                            #{tag}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* 별점 & 리뷰 */}
-                  <div className="text-right shrink-0">
-                    {place.rating && (
-                      <div className="flex items-center gap-0.5 justify-end bg-yellow-50 px-2 py-0.5 rounded-full mb-1">
-                        <span className="text-yellow-500 text-[10px]">★</span>
-                        <span className="text-xs font-bold text-gray-800">{place.rating}</span>
-                      </div>
-                    )}
-                    {place.reviewCount != null && (
-                      <p className="text-[11px] text-gray-400">
-                        리뷰 {place.reviewCount.toLocaleString()}
-                      </p>
-                    )}
-                    {place.openHours && (
-                      <p className="text-[10px] text-gray-300 mt-1">{place.openHours}</p>
-                    )}
+                  <div className="flex gap-1 overflow-hidden">
+                    {place.tags?.slice(0, 2).map((t) => (
+                      <span key={t} className="text-[9px] px-2 py-0.5 rounded-full bg-[#FFF5F3] text-[#E8513D] font-bold border border-[#E8513D]/10 whitespace-nowrap">
+                        #{t}
+                      </span>
+                    ))}
                   </div>
                 </div>
               </div>
