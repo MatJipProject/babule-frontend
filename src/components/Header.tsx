@@ -1,82 +1,90 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { tabs, HEADER_HEIGHT } from "@/data/constants";
+import type { Tab } from "@/data/constants";
+import type { UserResponse } from "@/types/api";
 
-export const HEADER_HEIGHT = 56;
+interface HeaderProps {
+  activeTab: Tab;
+  onTabChange: (tab: Tab) => void;
+  user?: UserResponse | null;
+  isLoggedIn?: boolean;
+}
 
-const NAV_ITEMS = [
-  { label: "홈", href: "/" },
-  { label: "맛집 지도", href: "/map" },
-  { label: "메뉴 추천", href: "/roulette" },
-  { label: "맛집 목록", href: "/list" },
-  { label: "맛집 추가", href: "/add" },
-  { label: "마이", href: "/my" },
-];
-
-export default function Header() {
-  const pathname = usePathname();
-
-  const currentLabel =
-    NAV_ITEMS.find((item) => item.href === pathname)?.label ?? "";
-
+export default function Header({ activeTab, onTabChange, user, isLoggedIn }: HeaderProps) {
   return (
     <header
-      className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-100 safe-area-top"
-      style={{ height: HEADER_HEIGHT }}
+      className="bg-white/80 backdrop-blur-xl border-b border-gray-100 shrink-0 relative z-50 safe-area-top"
+      style={{ minHeight: HEADER_HEIGHT }}
     >
-      <div className="max-w-[900px] mx-auto h-full px-4 flex items-center justify-between">
-        {/* 브랜드 로고 */}
-        <Link href="/" className="flex items-center gap-1 btn-press">
-          <span className="text-xl font-extrabold bg-gradient-to-r from-[#E8513D] to-[#F97316] bg-clip-text text-transparent">
-            배부룩
+      <div className="max-w-[900px] mx-auto h-14 flex items-center px-4 md:px-6">
+        <h1
+          className="text-lg md:text-xl font-black bg-gradient-to-r from-[#E8513D] to-[#F97316] bg-clip-text text-transparent tracking-tight cursor-pointer shrink-0 select-none min-w-[44px] min-h-[44px] flex items-center"
+          onClick={() => onTabChange("홈")}
+        >
+          배부룩
+        </h1>
+
+        {/* 모바일: 현재 탭 이름 표시 */}
+        {activeTab !== "홈" && (
+          <span className="md:hidden text-sm font-bold text-gray-800 ml-3 truncate">
+            {activeTab}
           </span>
-        </Link>
+        )}
 
-        {/* 모바일: 현재 탭 이름 */}
-        <span className="md:hidden text-sm font-semibold text-gray-700">
-          {pathname !== "/" && currentLabel}
-        </span>
-
-        {/* 데스크탑: 탭 네비게이션 */}
-        <nav className="hidden md:flex items-center gap-1">
-          {NAV_ITEMS.map(({ label, href }) => (
-            <Link
-              key={href}
-              href={href}
-              className={`relative px-3 py-2 text-sm font-medium rounded-lg transition-colors btn-press ${
-                pathname === href
+        {/* 데스크탑 탭 네비 */}
+        <nav className="hidden md:flex items-center h-full gap-1 ml-10">
+          {tabs.map((tab) => (
+            <button
+              key={tab}
+              onClick={() => onTabChange(tab)}
+              className={`relative h-full px-3 text-[14px] font-semibold transition-colors whitespace-nowrap ${
+                tab === activeTab
                   ? "text-[#E8513D]"
-                  : "text-gray-500 hover:text-gray-800 hover:bg-gray-50"
+                  : "text-gray-400 hover:text-gray-700"
               }`}
             >
-              {label}
-              {pathname === href && (
+              {tab}
+              {tab === activeTab && (
                 <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-5 h-[3px] bg-[#E8513D] rounded-full" />
               )}
-            </Link>
+            </button>
           ))}
         </nav>
+        <div className="flex-1" />
 
-        {/* 유저 아이콘 */}
-        <Link
-          href="/my"
-          className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 hover:bg-gray-200 transition-colors btn-press"
-        >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+        {/* 모바일 로그인 상태 아이콘 */}
+        {isLoggedIn && user ? (
+          <button
+            onClick={() => onTabChange("마이")}
+            className="md:hidden w-8 h-8 rounded-full bg-gradient-to-br from-[#E8513D] to-[#F97316] flex items-center justify-center shrink-0"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-            />
-          </svg>
-        </Link>
+            <span className="text-[11px] text-white font-bold">{user.nickname.charAt(0)}</span>
+          </button>
+        ) : null}
+
+        {/* 데스크탑 로그인 */}
+        {isLoggedIn && user ? (
+          <button
+            onClick={() => onTabChange("마이")}
+            className="hidden md:flex items-center gap-1.5 text-xs text-gray-700 bg-gray-50 hover:bg-gray-100 border border-gray-200 px-3.5 py-1.5 rounded-full transition-colors font-medium"
+          >
+            <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[#E8513D] to-[#F97316] flex items-center justify-center shrink-0">
+              <span className="text-[9px] text-white font-bold">{user.nickname.charAt(0)}</span>
+            </div>
+            {user.nickname}
+          </button>
+        ) : (
+          <button
+            onClick={() => onTabChange("마이")}
+            className="hidden md:flex items-center gap-1.5 text-xs text-gray-500 bg-gray-50 hover:bg-gray-100 border border-gray-200 px-3.5 py-1.5 rounded-full transition-colors font-medium"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            로그인
+          </button>
+        )}
       </div>
     </header>
   );
