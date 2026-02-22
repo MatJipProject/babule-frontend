@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
+import LoginModal from "./LoginModal";
 
 export const HEADER_HEIGHT = 56;
 
@@ -16,11 +18,13 @@ const NAV_ITEMS = [
 
 export default function Header() {
   const pathname = usePathname();
+  const { user, openLoginModal, logout } = useAuth();
 
   const currentLabel =
     NAV_ITEMS.find((item) => item.href === pathname)?.label ?? "";
 
   return (
+    <>
     <header
       className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-100 safe-area-top"
       style={{ height: HEADER_HEIGHT }}
@@ -58,26 +62,32 @@ export default function Header() {
           ))}
         </nav>
 
-        {/* 유저 아이콘 */}
-        <Link
-          href="/my"
-          className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 hover:bg-gray-200 transition-colors btn-press"
-        >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-            />
-          </svg>
-        </Link>
+        {/* 유저 정보 또는 로그인 버튼 */}
+        <div className="flex items-center gap-2">
+          {user ? (
+            <>
+              <span className="text-sm text-gray-600">
+                {user.nickname}님
+              </span>
+              <button
+                onClick={logout}
+                className="px-3 py-1.5 text-sm font-medium text-white bg-gray-500 rounded-lg hover:bg-gray-600 transition-colors btn-press"
+              >
+                로그아웃
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={openLoginModal}
+              className="px-3 py-1.5 text-sm font-medium text-white bg-[#E8513D] rounded-lg hover:bg-opacity-90 transition-colors btn-press"
+            >
+              로그인
+            </button>
+          )}
+        </div>
       </div>
     </header>
+    <LoginModal />
+    </>
   );
 }
