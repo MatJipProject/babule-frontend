@@ -67,13 +67,22 @@ const PLACES = [
   },
 ];
 
+const CATEGORY_ICONS: Record<string, string> = {
+  "한식": "🍚",
+  "일식": "🍣",
+  "양식": "🍝",
+  "카페": "☕",
+  "디저트": "🍰",
+  "분식": "🥘",
+};
+
 const CATEGORIES = ["전체","한식","일식","양식","카페","디저트","분식"];
 const REGIONS    = ["전체","홍대","성수","강남","이태원","종로","명동","잠실"];
 const BRAND      = "#E8513D";
 const BRAND2     = "#F97316";
 
 // ── 카드 ──────────────────────────────────────────
-function PlaceCard({ place, isFav, onFav, onClick }) {
+function PlaceCard({ place, isFav, onFav, onClick, reviewCount }) {
   const [hov, setHov] = useState(false);
   return (
     <div
@@ -130,7 +139,7 @@ function PlaceCard({ place, isFav, onFav, onClick }) {
         <div style={{ display: "flex", alignItems: "center", gap: 3, marginBottom: 7 }}>
           <span style={{ fontSize: 11, color: "#fbbf24" }}>★</span>
           <span style={{ fontSize: 11, fontWeight: 700, color: "#111" }}>{place.rating}</span>
-          <span style={{ fontSize: 10, color: "#b0b0b0" }}>({place.reviewCount})</span>
+          <span style={{ fontSize: 10, color: "#b0b0b0" }}>({reviewCount})</span>
           <span style={{ marginLeft: "auto", fontSize: 9, color: "#b0b0b0" }}>📍{place.region}</span>
         </div>
         <div style={{ display: "flex", gap: 4 }}>
@@ -148,7 +157,7 @@ function PlaceCard({ place, isFav, onFav, onClick }) {
 }
 
 // ── 상세 슬라이드 패널 ───────────────────────────────
-function DetailPanel({ place, isFav, onFav, onClose }) {
+function DetailPanel({ place, isFav, onFav, onClose, onReviewSubmit }) {
   const [view, setView] = useState("info"); // "info" | "review" | "reviews"
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
@@ -199,6 +208,7 @@ function DetailPanel({ place, isFav, onFav, onClose }) {
     setComment("");
     setRating(5);
     setPhotos([]);
+    onReviewSubmit();
   };
 
   return (
@@ -539,12 +549,14 @@ export default function ListPage() {
           <h1 style={{ fontSize: 20, fontWeight: 900, color: "#111" }}>
             🍽️ <span style={{ color: BRAND }}>맛집</span> 목록
           </h1>
-          <button onClick={() => setOnlyFav(!onlyFav)} style={{
-            padding: "5px 12px", borderRadius: 99, fontSize: 11, fontWeight: 700,
-            border: `1.5px solid ${onlyFav ? "#fca5a5" : "#e5e7eb"}`,
-            background: onlyFav ? "#fef2f2" : "white",
-            color: onlyFav ? "#ef4444" : "#9ca3af", cursor: "pointer",
-          }}>{onlyFav ? "❤️ 즐겨찾기" : "🤍 즐겨찾기"}</button>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button onClick={() => setOnlyFav(!onlyFav)} style={{
+              padding: "5px 12px", borderRadius: 99, fontSize: 11, fontWeight: 700,
+              border: `1.5px solid ${onlyFav ? "#fca5a5" : "#e5e7eb"}`,
+              background: onlyFav ? "#fef2f2" : "white",
+              color: onlyFav ? "#ef4444" : "#9ca3af", cursor: "pointer",
+            }}>{onlyFav ? "❤️ 즐겨찾기" : "🤍 즐겨찾기"}</button>
+          </div>
         </div>
 
         {/* 검색 */}
@@ -559,29 +571,75 @@ export default function ListPage() {
             }} />
         </div>
 
-        {/* 지역 필터 */}
-        <div style={{ display: "flex", gap: 7, overflowX: "auto", padding: "0 18px 10px", scrollbarWidth: "none" }}>
-          {REGIONS.map(r => (
-            <button key={r} onClick={() => setRegion(r)} style={{
-              flexShrink: 0, padding: "5px 13px", borderRadius: 99,
-              fontSize: 11, fontWeight: 700, border: "none", cursor: "pointer",
-              background: region === r ? `linear-gradient(135deg,${BRAND},${BRAND2})` : "#f3f4f6",
-              color: region === r ? "white" : "#6b7280", transition: "all 0.18s",
-            }}>{r}</button>
-          ))}
-        </div>
+        {/* 필터 섹션 */}
+        <div style={{ padding: "0 18px 12px" }}>
+          {/* 지역 필터 */}
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
+              <span style={{ fontSize: 12, fontWeight: 800, color: "#666", display: "flex", alignItems: "center", gap: 3 }}>
+                📍 지역
+              </span>
+            </div>
+            <div style={{ display: "flex", gap: 7, overflowX: "auto", scrollbarWidth: "none", alignItems: "center", flex: 1 }}>
+              {REGIONS.map(r => (
+                <button key={r} onClick={() => setRegion(r)} style={{
+                  flexShrink: 0, padding: "6px 14px", borderRadius: 99,
+                  fontSize: 11, fontWeight: 700, border: "none", cursor: "pointer",
+                  background: region === r ? `linear-gradient(135deg,${BRAND},${BRAND2})` : "#f3f4f6",
+                  color: region === r ? "white" : "#6b7280", transition: "all 0.18s",
+                  boxShadow: region === r ? `0 4px 12px ${BRAND}44` : "none",
+                }}>{r}</button>
+              ))}
+              {region !== "전체" && (
+                <button 
+                  onClick={() => setRegion("전체")}
+                  style={{ 
+                    flexShrink: 0, background: "none", border: "none", padding: "4px 8px", cursor: "pointer", 
+                    fontSize: 14, color: "#9ca3af", fontWeight: "bold",
+                    display: "flex", alignItems: "center", gap: 2
+                  }}
+                >
+                  <span style={{ fontSize: 16 }}>↺</span>
+                </button>
+              )}
+            </div>
+          </div>
 
-        {/* 카테고리 필터 */}
-        <div style={{ display: "flex", gap: 7, overflowX: "auto", padding: "0 18px 12px", scrollbarWidth: "none" }}>
-          {CATEGORIES.map(c => (
-            <button key={c} onClick={() => setCat(c)} style={{
-              flexShrink: 0, padding: "4px 13px", borderRadius: 99,
-              fontSize: 11, fontWeight: 700, cursor: "pointer",
-              border: `1.5px solid ${cat === c ? BRAND : "#e5e7eb"}`,
-              background: cat === c ? "#fff5f3" : "white",
-              color: cat === c ? BRAND : "#9ca3af", transition: "all 0.18s",
-            }}>{c}</button>
-          ))}
+          {/* 카테고리 필터 */}
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
+              <span style={{ fontSize: 12, fontWeight: 800, color: "#666", display: "flex", alignItems: "center", gap: 3 }}>
+                🍴 분야
+              </span>
+            </div>
+            <div style={{ display: "flex", gap: 7, overflowX: "auto", scrollbarWidth: "none", alignItems: "center", flex: 1 }}>
+              {CATEGORIES.map(c => (
+                <button key={c} onClick={() => setCat(c)} style={{
+                  flexShrink: 0, padding: "5px 14px", borderRadius: 99,
+                  fontSize: 11, fontWeight: 700, cursor: "pointer",
+                  display: "flex", alignItems: "center", gap: 4,
+                  border: `1.5px solid ${cat === c ? BRAND : "#e5e7eb"}`,
+                  background: cat === c ? "#fff5f3" : "white",
+                  color: cat === c ? BRAND : "#9ca3af", transition: "all 0.18s",
+                }}>
+                  {CATEGORY_ICONS[c] && <span style={{ fontSize: 13 }}>{CATEGORY_ICONS[c]}</span>}
+                  {c}
+                </button>
+              ))}
+              {cat !== "전체" && (
+                <button 
+                  onClick={() => setCat("전체")}
+                  style={{ 
+                    flexShrink: 0, background: "none", border: "none", padding: "4px 8px", cursor: "pointer", 
+                    fontSize: 14, color: "#9ca3af", fontWeight: "bold",
+                    display: "flex", alignItems: "center", gap: 2
+                  }}
+                >
+                  <span style={{ fontSize: 16 }}>↺</span>
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
