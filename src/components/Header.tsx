@@ -13,7 +13,6 @@ const NAV_ITEMS = [
   { label: "맛집 지도", href: "/map" },
   { label: "메뉴 추천", href: "/roulette" },
   { label: "맛집 목록", href: "/list" },
-  { label: "맛집 추가", href: "/add" },
   { label: "마이", href: "/my" },
 ];
 
@@ -61,6 +60,21 @@ export default function Header() {
               )}
             </Link>
           ))}
+          {user && (
+            <Link
+              href="/add-restaurant"
+              className={`relative px-3 py-2 text-sm font-medium rounded-lg transition-colors btn-press ${
+                pathname === "/add-restaurant"
+                  ? "text-[#E8513D]"
+                  : "text-gray-500 hover:text-gray-800 hover:bg-gray-50"
+              }`}
+            >
+              맛집 추가
+              {pathname === "/add-restaurant" && (
+                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-5 h-[3px] bg-[#E8513D] rounded-full" />
+              )}
+            </Link>
+          )}
         </nav>
 
         {/* 유저 정보 또는 로그인 버튼 */}
