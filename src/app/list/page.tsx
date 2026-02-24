@@ -81,8 +81,30 @@ const REGIONS    = ["전체","홍대","성수","강남","이태원","종로","�
 const BRAND      = "#E8513D";
 const BRAND2     = "#F97316";
 
+interface Place {
+  id: string;
+  name: string;
+  category: string;
+  region: string;
+  rating: number;
+  reviewCount: number;
+  tags: string[];
+  emoji: string;
+  grad: string;
+  description: string;
+  address: string;
+  phone: string;
+  hours: string;
+}
+
 // ── 카드 ──────────────────────────────────────────
-function PlaceCard({ place, isFav, onFav, onClick, reviewCount }) {
+function PlaceCard({ place, isFav, onFav, onClick, reviewCount }: { 
+  place: Place; 
+  isFav: boolean; 
+  onFav: () => void; 
+  onClick: () => void;
+  reviewCount: number;
+}) {
   const [hov, setHov] = useState(false);
   return (
     <div
@@ -157,14 +179,29 @@ function PlaceCard({ place, isFav, onFav, onClick, reviewCount }) {
 }
 
 // ── 상세 슬라이드 패널 ───────────────────────────────
-function DetailPanel({ place, isFav, onFav, onClose, onReviewSubmit }) {
-  const [view, setView] = useState("info"); // "info" | "review" | "reviews"
+function DetailPanel({ place, isFav, onFav, onClose, onReviewSubmit }: {
+  place: Place;
+  isFav: boolean;
+  onFav: () => void;
+  onClose: () => void;
+  onReviewSubmit: () => void;
+}) {
+  const [view, setView] = useState<"info" | "review" | "reviews">("info"); // "info" | "review" | "reviews"
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
-  const [photos, setPhotos] = useState([]);
+  const [photos, setPhotos] = useState<string[]>([]);
 
   // 리뷰 목록을 상태로 관리 (등록 후 즉시 반영 시뮬레이션)
-  const [reviewsList, setReviewsList] = useState([
+  interface Review {
+    id: number;
+    author: string;
+    date: string;
+    rating: number;
+    comment: string;
+    photos: string[];
+  }
+
+  const [reviewsList, setReviewsList] = useState<Review[]>([
     { id: 1, author: "미식가A", date: "2024.02.20", rating: 5, comment: "진짜 맛있어요! 재방문 의사 200%입니다.", photos: [place.grad, place.grad] },
     { id: 2, author: "배고픈사람", date: "2024.02.18", rating: 4, comment: "양도 많고 친절하시네요. 다만 대기가 좀 길었어요.", photos: [] },
     { id: 3, author: "단골손님", date: "2024.02.15", rating: 5, comment: "여기만 오면 항상 과식하게 되네요. 고기 질이 정말 좋아요.", photos: [place.grad] },
@@ -177,8 +214,8 @@ function DetailPanel({ place, isFav, onFav, onClose, onReviewSubmit }) {
   const isReviewsList = view === "reviews";
   const isValid = comment.length >= 5;
 
-  const handlePhotoUpload = (e) => {
-    const files = Array.from(e.target.files);
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
     if (photos.length + files.length > 10) {
       alert("사진은 최대 10장까지 등록 가능합니다.");
       return;
@@ -187,7 +224,7 @@ function DetailPanel({ place, isFav, onFav, onClose, onReviewSubmit }) {
     setPhotos([...photos, ...newPhotos]);
   };
 
-  const removePhoto = (idx) => {
+  const removePhoto = (idx: number) => {
     setPhotos(photos.filter((_, i) => i !== idx));
   };
 
@@ -212,7 +249,7 @@ function DetailPanel({ place, isFav, onFav, onClose, onReviewSubmit }) {
   };
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 200, display: "flex", alignItems: "flex-end" }}>
+    <div className="detail-overlay" style={{ position: "fixed", inset: 0, zIndex: 200, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
       <style>{`
         @keyframes slideUp {
           from { transform: translateY(100%); }
@@ -221,6 +258,23 @@ function DetailPanel({ place, isFav, onFav, onClose, onReviewSubmit }) {
         @keyframes dimIn {
           from { opacity: 0; }
           to   { opacity: 1; }
+        }
+        @keyframes zoomIn {
+          from { opacity: 0; transform: scale(0.95); }
+          to   { opacity: 1; transform: scale(1); }
+        }
+        @media (min-width: 768px) {
+          .detail-overlay {
+            align-items: center !important;
+            padding: 20px;
+          }
+          .detail-panel {
+            max-width: 540px !important;
+            border-radius: 24px !important;
+            max-height: 85vh !important;
+            animation: zoomIn 0.3s cubic-bezier(0.32,0.72,0,1) !important;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2) !important;
+          }
         }
       `}</style>
 
@@ -231,8 +285,8 @@ function DetailPanel({ place, isFav, onFav, onClose, onReviewSubmit }) {
         animation: "dimIn 0.25s ease",
       }} />
 
-      {/* 바텀시트 */}
-      <div style={{
+      {/* 바텀시트 (데스크탑에서는 모달) */}
+      <div className="detail-panel" style={{
         position: "relative", width: "100%", background: "white",
         display: "flex", flexDirection: "column",
         maxHeight: "88vh",
@@ -500,26 +554,26 @@ function DetailPanel({ place, isFav, onFav, onClose, onReviewSubmit }) {
 
 // ── 메인 ───────────────────────────────────────────
 export default function ListPage() {
-  const [favs, setFavs]       = useState(new Set());
+  const [favs, setFavs]       = useState<Set<string>>(new Set());
   const [cat, setCat]         = useState("전체");
   const [region, setRegion]   = useState("전체");
   const [query, setQuery]     = useState("");
   const [onlyFav, setOnlyFav] = useState(false);
-  const [detail, setDetail]   = useState(null);
+  const [detail, setDetail]   = useState<Place | null>(null);
 
   // 맛집별 리뷰 수 관리 상태 (초기값은 PLACES의 reviewCount)
-  const [reviewCounts, setReviewCounts] = useState(() => {
-    const counts = {};
+  const [reviewCounts, setReviewCounts] = useState<Record<string, number>>(() => {
+    const counts: Record<string, number> = {};
     PLACES.forEach(p => counts[p.id] = p.reviewCount);
     return counts;
   });
 
-  const incrementReviewCount = id => setReviewCounts(prev => ({
+  const incrementReviewCount = (id: string) => setReviewCounts(prev => ({
     ...prev,
     [id]: prev[id] + 1
   }));
 
-  const toggleFav = id => setFavs(prev => {
+  const toggleFav = (id: string) => setFavs(prev => {
     const n = new Set(prev);
     n.has(id) ? n.delete(id) : n.add(id);
     return n;
@@ -662,7 +716,7 @@ export default function ListPage() {
             }}>필터 초기화</button>
           </div>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {filtered.map(place => (
               <PlaceCard key={place.id} place={place}
                 isFav={favs.has(place.id)}
