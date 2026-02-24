@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import LoginModal from "./LoginModal";
+import SignupModal from "./SignupModal";
 
 export const HEADER_HEIGHT = 56;
 
@@ -18,7 +19,7 @@ const NAV_ITEMS = [
 
 export default function Header() {
   const pathname = usePathname();
-  const { user, openLoginModal, logout } = useAuth();
+  const { user, openLoginModal, openSignupModal, logout } = useAuth();
 
   const currentLabel =
     NAV_ITEMS.find((item) => item.href === pathname)?.label ?? "";
@@ -77,17 +78,26 @@ export default function Header() {
               </button>
             </>
           ) : (
-            <button
-              onClick={openLoginModal}
-              className="px-3 py-1.5 text-sm font-medium text-white bg-[#E8513D] rounded-lg hover:bg-opacity-90 transition-colors btn-press"
-            >
-              로그인
-            </button>
+            <>
+              <button
+                onClick={openSignupModal}
+                className="px-3 py-1.5 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-100 transition-colors btn-press"
+              >
+                회원가입
+              </button>
+              <button
+                onClick={openLoginModal}
+                className="px-3 py-1.5 text-sm font-medium text-white bg-[#E8513D] rounded-lg hover:bg-opacity-90 transition-colors btn-press"
+              >
+                로그인
+              </button>
+            </>
           )}
         </div>
       </div>
     </header>
     <LoginModal />
+    <SignupModal />
     </>
   );
 }

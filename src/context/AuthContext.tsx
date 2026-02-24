@@ -19,10 +19,14 @@ interface User {
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
+  signup: (data: any) => Promise<void>;
   logout: () => Promise<void>;
   isLoginModalOpen: boolean;
   openLoginModal: () => void;
   closeLoginModal: () => void;
+  isSignupModalOpen: boolean;
+  openSignupModal: () => void;
+  closeSignupModal: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -30,9 +34,19 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
 
-  const openLoginModal = () => setIsLoginModalOpen(true);
+  const openLoginModal = () => {
+    setIsSignupModalOpen(false);
+    setIsLoginModalOpen(true);
+  };
   const closeLoginModal = () => setIsLoginModalOpen(false);
+
+  const openSignupModal = () => {
+    setIsLoginModalOpen(false);
+    setIsSignupModalOpen(true);
+  };
+  const closeSignupModal = () => setIsSignupModalOpen(false);
 
   const fetchMe = async (token: string) => {
     const response = await fetch("https://api.baebulook.site/api/v1/auth/me", {
@@ -113,6 +127,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const signup = async (data: any) => {
+    try {
+      const response = await fetch(
+        "https://api.baebulook.site/api/v1/auth/signup",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        }
+      );
+
+      if (!response.ok) {
+        let errorMessage = "회원가입에 실패했습니다.";
+        try {
+          const errorData = await response.json();
+          if (errorData && errorData.message) {
+            errorMessage = Array.isArray(errorData.message)
+              ? errorData.message.join("\n")
+              : errorData.message;
+          }
+        } catch (e) {
+          // ignore
+        }
+        throw new Error(errorMessage);
+      }
+
+      alert("회원가입이 완료되었습니다. 로그인해주세요.");
+      openLoginModal();
+    } catch (error: any) {
+      console.error("Signup error:", error);
+      alert(error.message);
+      throw error;
+    }
+  };
+
   const logout = async () => {
     await api.logout();
     localStorage.removeItem("token");
@@ -125,10 +176,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         login,
+        signup,
         logout,
         isLoginModalOpen,
         openLoginModal,
         closeLoginModal,
+        isSignupModalOpen,
+        openSignupModal,
+        closeSignupModal,
       }}
     >
       {children}
