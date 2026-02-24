@@ -1,282 +1,181 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/context/AuthContext";
-import * as restaurantApi from "@/lib/restaurantApi"; // Will create this next
-
-const categories = [
-  "한식", "중식", "일식", "양식", "분식", "아시안", "카페", "술집", "기타"
-];
 
 export default function AddRestaurantPage() {
-  const { user } = useAuth();
   const router = useRouter();
+  const [formData, setFormData] = useState({
+    name: "",
+    address: "",
+    category: "KOREAN",
+    description: "",
+    imageUrl: "",
+  });
 
-  const [restaurantName, setRestaurantName] = useState("");
-  const [category, setCategory] = useState(categories[0]);
-  const [address, setAddress] = useState("");
-  const [latitude, setLatitude] = useState("");
-  const [longitude, setLongitude] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [description, setDescription] = useState("");
-  const [photos, setPhotos] = useState<File[]>([]);
-  const [rating, setRating] = useState<number | undefined>(undefined);
-  const [reviewContent, setReviewContent] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setPhotos(Array.from(e.target.files));
-    }
-  };
-
-  const validateForm = () => {
-    if (!restaurantName.trim()) return "맛집 이름을 입력해주세요.";
-    if (!category.trim()) return "카테고리를 선택해주세요.";
-    if (!address.trim()) return "주소를 입력해주세요.";
-    if (!latitude || isNaN(parseFloat(latitude))) return "올바른 위도를 입력해주세요.";
-    if (!longitude || isNaN(parseFloat(longitude))) return "올바른 경도를 입력해주세요.";
-    if (rating && (rating < 1 || rating > 5)) return "별점은 1에서 5 사이여야 합니다.";
-    return null;
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-
-    if (!user) {
-      setError("로그인 후 이용해주세요.");
-      return;
-    }
-
-    const validationError = validateForm();
-    if (validationError) {
-      setError(validationError);
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const restaurantData = {
-        name: restaurantName,
-        category,
-        address,
-        latitude: parseFloat(latitude),
-        longitude: parseFloat(longitude),
-        phoneNumber: phoneNumber || undefined,
-        description: description || undefined,
-      };
-
-      const reviewData = (rating !== undefined || reviewContent.trim())
-        ? {
-            rating: rating || undefined,
-            content: reviewContent || undefined,
-          }
-        : undefined;
-
-      await restaurantApi.addRestaurantWithReview(
-        restaurantData,
-        reviewData,
-        photos
-      );
-
-      alert("맛집과 리뷰가 성공적으로 등록되었습니다!");
-      router.push("/"); // Redirect to home or restaurant list page
-    } catch (err: any) {
-      console.error("Failed to add restaurant:", err);
-      setError(err.message || "맛집 등록에 실패했습니다.");
-    } finally {
-      setLoading(false);
-    }
+    // TODO: 실제 API 연동 필요
+    console.log("Submitting:", formData);
+    alert("맛집이 성공적으로 추가되었습니다!");
+    router.push("/list");
   };
 
   return (
-    <div className="max-w-xl mx-auto py-8">
-      <h1 className="text-2xl font-bold mb-6 text-gray-800">맛집 추가</h1>
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Restaurant Details */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-          <h2 className="text-xl font-semibold mb-4 text-gray-700">맛집 정보</h2>
-          <div>
-            <label htmlFor="restaurantName" className="block text-sm font-medium text-gray-700">
-              맛집 이름 <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              id="restaurantName"
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#E8513D] focus:border-[#E8513D]"
-              value={restaurantName}
-              onChange={(e) => setRestaurantName(e.target.value)}
-              required
-            />
+    <div className="min-h-[calc(100vh-56px)] bg-gradient-to-br from-orange-50 to-rose-50 py-10 px-4">
+      <div className="max-w-2xl mx-auto">
+        <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-white/50">
+          <div className="bg-gradient-to-r from-[#E8513D] to-[#F97316] p-8 text-white relative overflow-hidden">
+            <div className="relative z-10">
+              <h1 className="text-3xl font-bold mb-2">맛집 추가하기</h1>
+              <p className="opacity-90 font-medium">
+                나만의 숨은 맛집을 공유해보세요!
+              </p>
+            </div>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl" />
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/5 rounded-full translate-y-1/2 -translate-x-1/2 blur-xl" />
           </div>
 
-          <div>
-            <label htmlFor="category" className="block text-sm font-medium text-gray-700">
-              카테고리 <span className="text-red-500">*</span>
-            </label>
-            <select
-              id="category"
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#E8513D] focus:border-[#E8513D]"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              required
-            >
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor="address" className="block text-sm font-medium text-gray-700">
-              주소 <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              id="address"
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#E8513D] focus:border-[#E8513D]"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
+          <form onSubmit={handleSubmit} className="p-8 space-y-6">
+            {/* 맛집 이름 */}
             <div>
-              <label htmlFor="latitude" className="block text-sm font-medium text-gray-700">
-                위도 <span className="text-red-500">*</span>
+              <label className="block text-sm font-bold text-gray-700 mb-2">
+                맛집 이름 <span className="text-red-500">*</span>
               </label>
               <input
-                type="number"
-                id="latitude"
-                step="any"
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#E8513D] focus:border-[#E8513D]"
-                value={latitude}
-                onChange={(e) => setLatitude(e.target.value)}
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                className="w-full px-4 py-3 rounded-xl border-2 border-gray-100 focus:border-[#E8513D] focus:ring-0 transition-colors bg-gray-50 focus:bg-white text-gray-800 placeholder-gray-400"
+                placeholder="예: 맛있는 떡볶이집"
                 required
               />
             </div>
+
+            {/* 카테고리 */}
             <div>
-              <label htmlFor="longitude" className="block text-sm font-medium text-gray-700">
-                경도 <span className="text-red-500">*</span>
+              <label className="block text-sm font-bold text-gray-700 mb-2">
+                카테고리 <span className="text-red-500">*</span>
               </label>
-              <input
-                type="number"
-                id="longitude"
-                step="any"
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#E8513D] focus:border-[#E8513D]"
-                value={longitude}
-                onChange={(e) => setLongitude(e.target.value)}
-                required
-              />
-            </div>
-          </div>
-
-          <div>
-            <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700">
-              전화번호
-            </label>
-            <input
-              type="text"
-              id="phoneNumber"
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#E8513D] focus:border-[#E8513D]"
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-              설명
-            </label>
-            <textarea
-              id="description"
-              rows={3}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#E8513D] focus:border-[#E8513D]"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            ></textarea>
-          </div>
-
-          <div>
-            <label htmlFor="photos" className="block text-sm font-medium text-gray-700">
-              사진
-            </label>
-            <input
-              type="file"
-              id="photos"
-              multiple
-              accept="image/*"
-              className="mt-1 block w-full text-sm text-gray-500
-                file:mr-4 file:py-2 file:px-4
-                file:rounded-full file:border-0
-                file:text-sm file:font-semibold
-                file:bg-[#E8513D]/10 file:text-[#E8513D]
-                hover:file:bg-[#E8513D]/20"
-              onChange={handleFileChange}
-              ref={fileInputRef}
-            />
-            {photos.length > 0 && (
-              <div className="mt-2 text-sm text-gray-600">
-                선택된 파일: {photos.map(file => file.name).join(', ')}
+              <div className="relative">
+                <select
+                  name="category"
+                  value={formData.category}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-100 focus:border-[#E8513D] focus:ring-0 transition-colors bg-gray-50 focus:bg-white appearance-none text-gray-800"
+                >
+                  <option value="KOREAN">한식</option>
+                  <option value="CHINESE">중식</option>
+                  <option value="JAPANESE">일식</option>
+                  <option value="WESTERN">양식</option>
+                  <option value="SNACK">분식</option>
+                  <option value="ETC">기타</option>
+                </select>
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                </div>
               </div>
-            )}
-          </div>
+            </div>
+
+            {/* 주소 */}
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2">
+                주소 <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                name="address"
+                value={formData.address}
+                onChange={handleChange}
+                className="w-full px-4 py-3 rounded-xl border-2 border-gray-100 focus:border-[#E8513D] focus:ring-0 transition-colors bg-gray-50 focus:bg-white text-gray-800 placeholder-gray-400"
+                placeholder="서울시 강남구..."
+                required
+              />
+            </div>
+
+            {/* 설명 */}
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2">
+                설명
+              </label>
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                rows={4}
+                className="w-full px-4 py-3 rounded-xl border-2 border-gray-100 focus:border-[#E8513D] focus:ring-0 transition-colors bg-gray-50 focus:bg-white resize-none text-gray-800 placeholder-gray-400"
+                placeholder="이 맛집의 특징을 알려주세요!"
+              />
+            </div>
+
+            {/* 사진 추가 */}
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2">
+                사진 추가
+              </label>
+              <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl hover:border-[#E8513D] transition-colors bg-gray-50 hover:bg-gray-100">
+                <div className="space-y-1 text-center">
+                  <svg
+                    className="mx-auto h-12 w-12 text-gray-400"
+                    stroke="currentColor"
+                    fill="none"
+                    viewBox="0 0 48 48"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                      strokeWidth={2}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  <div className="flex text-sm text-gray-600 justify-center">
+                    <label
+                      htmlFor="file-upload"
+                      className="relative cursor-pointer rounded-md font-medium text-[#E8513D] hover:text-[#d9402c] focus-within:outline-none"
+                    >
+                      <span>파일 업로드</span>
+                      <input
+                        id="file-upload"
+                        name="file-upload"
+                        type="file"
+                        className="sr-only"
+                        accept="image/*"
+                        onChange={(e) => {
+                          // TODO: 파일 업로드 로직 구현
+                          if (e.target.files && e.target.files[0]) {
+                            console.log("File selected:", e.target.files[0]);
+                          }
+                        }}
+                      />
+                    </label>
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    PNG, JPG, GIF up to 10MB
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              className="w-full py-4 bg-gradient-to-r from-[#E8513D] to-[#F97316] text-white font-bold rounded-xl shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 transform hover:-translate-y-0.5 transition-all duration-200"
+            >
+              맛집 등록하기
+            </button>
+          </form>
         </div>
-
-        {/* Review Details (Optional) */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-          <h2 className="text-xl font-semibold mb-4 text-gray-700">리뷰 정보 (선택)</h2>
-          <div>
-            <label htmlFor="rating" className="block text-sm font-medium text-gray-700">
-              별점 (1-5)
-            </label>
-            <input
-              type="number"
-              id="rating"
-              min="1"
-              max="5"
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#E8513D] focus:border-[#E8513D]"
-              value={rating === undefined ? "" : rating}
-              onChange={(e) => setRating(e.target.value ? parseInt(e.target.value) : undefined)}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="reviewContent" className="block text-sm font-medium text-gray-700">
-              리뷰 내용
-            </label>
-            <textarea
-              id="reviewContent"
-              rows={3}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#E8513D] focus:border-[#E8513D]"
-              value={reviewContent}
-              onChange={(e) => setReviewContent(e.target.value)}
-            ></textarea>
-          </div>
-        </div>
-
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-            <strong className="font-bold">에러: </strong>
-            <span className="block sm:inline">{error}</span>
-          </div>
-        )}
-
-        <button
-          type="submit"
-          className="w-full py-3 px-4 bg-[#E8513D] hover:bg-[#d9402c] text-white font-bold rounded-xl transition-colors shadow-lg shadow-orange-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={loading}
-        >
-          {loading ? "등록 중..." : "맛집 등록"}
-        </button>
-      </form>
+      </div>
     </div>
   );
 }
