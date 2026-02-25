@@ -292,6 +292,10 @@ export default function ListPage() {
 
   return (
     <div style={{ background: "#f5f4f2", minHeight: "100vh" }}>
+      <style>{`
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
       <div style={{ background: "white", padding: "18px 18px 0", position: "sticky", top: HEADER_HEIGHT, zIndex: 30, boxShadow: "0 1px 0 #eeebe6", margin: "0 -1rem" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, padding: "0 18px" }}>
           <h1 style={{ fontSize: 20, fontWeight: 900, color: "#111" }}>🍽️ <span style={{ color: BRAND }}>맛집</span> 목록</h1>
@@ -306,13 +310,13 @@ export default function ListPage() {
         <div style={{ padding: "0 18px 12px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
             <span style={{ fontSize: 12, fontWeight: 800, color: "#666" }}>📍 지역</span>
-            <div style={{ display: "flex", gap: 7, overflowX: "auto", flex: 1 }}>
+            <div className="hide-scrollbar" style={{ display: "flex", gap: 7, overflowX: "auto", flex: 1 }}>
               {REGIONS.map(r => (<button key={r} onClick={() => setRegion(r)} style={{ flexShrink: 0, padding: "6px 14px", borderRadius: 99, fontSize: 11, fontWeight: 700, border: "none", background: region === r ? `linear-gradient(135deg,${BRAND},${BRAND2})` : "#f3f4f6", color: region === r ? "white" : "#6b7280" }}>{r}</button>))}
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontSize: 12, fontWeight: 800, color: "#666" }}>🍴 분야</span>
-            <div style={{ display: "flex", gap: 7, overflowX: "auto", flex: 1 }}>
+            <div className="hide-scrollbar" style={{ display: "flex", gap: 7, overflowX: "auto", flex: 1 }}>
               {CATEGORIES.map(c => (<button key={c} onClick={() => setCat(c)} style={{ flexShrink: 0, padding: "5px 14px", borderRadius: 99, fontSize: 11, fontWeight: 700, border: `1.5px solid ${cat === c ? BRAND : "#e5e7eb"}`, background: cat === c ? "#fff5f3" : "white", color: cat === c ? BRAND : "#9ca3af" }}>{CATEGORY_ICONS[c]} {c}</button>))}
             </div>
           </div>
