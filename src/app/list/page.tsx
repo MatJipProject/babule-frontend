@@ -4,52 +4,6 @@ import { HEADER_HEIGHT } from "@/components/Header";
 import { useState, useEffect } from "react";
 import { fetchPlaces, Place, postReview, searchRestaurants } from "@/lib/api";
 
-// ── img URL 없이 grad(그라디언트) + emoji 사용 ──
-const PLACES = [
-  { 
-    id:"1", name:"진짜맛있는삼겹살", category:"한식", region:"홍대", rating:4.8, reviewCount:6, 
-    tags:["#혼밥ok","#가성비"], emoji:"🥩", grad:"linear-gradient(135deg,#ff6b35,#f7931e)", 
-    description:"홍대 골목 깊숙이 숨어있는 진짜배기 삼겹살집",
-    address: "서울 마포구 어울마당로 123", phone: "02-333-1234", hours: "11:30 ~ 23:00"
-  },
-  { 
-    id:"2", name:"홍대 라멘집", category:"일식", region:"홍대", rating:4.5, reviewCount:6, 
-    tags:["#데이트","#분위기good"], emoji:"🍜", grad:"linear-gradient(135deg,#c94b4b,#4b134f)", 
-    description:"진한 돈코츠 육수의 정통 라멘",
-    address: "서울 마포구 와우산로 45", phone: "02-321-5678", hours: "11:00 ~ 21:00"
-  },
-  { 
-    id:"3", name:"성수 브런치카페", category:"카페", region:"성수", rating:4.6, reviewCount:6, 
-    tags:["#인스타감성","#브런치"], emoji:"☕", grad:"linear-gradient(135deg,#b79891,#6f4e37)", 
-    description:"성수동 힙한 브런치 카페",
-    address: "서울 성동구 연무장길 8", phone: "02-461-9988", hours: "09:00 ~ 20:00"
-  },
-  { 
-    id:"4", name:"이태원 버거집", category:"양식", region:"이태원", rating:4.3, reviewCount:6, 
-    tags:["#수제버거","#혼밥ok"], emoji:"🍔", grad:"linear-gradient(135deg,#f7971e,#ffd200)", 
-    description:"두툼한 수제 패티 버거",
-    address: "서울 용산구 이태원로 191", phone: "02-790-1122", hours: "11:30 ~ 22:00"
-  },
-  { 
-    id:"5", name:"강남 스시", category:"일식", region:"강남", rating:4.9, reviewCount:6, 
-    tags:["#오마카세","#특별한날"], emoji:"🍣", grad:"linear-gradient(135deg,#1a1a2e,#16213e)", 
-    description:"신선한 재료의 스시 오마카세",
-    address: "서울 강남구 테헤란로 25", phone: "02-555-4433", hours: "12:00 ~ 22:00 (Break 15~17)"
-  },
-  { 
-    id:"6", name:"종로 설렁탕", category:"한식", region:"종로", rating:4.4, reviewCount:6, 
-    tags:["#국물맛집","#아침식사"], emoji:"🍲", grad:"linear-gradient(135deg,#74b9ff,#a29bfe)", 
-    description:"60년 전통 설렁탕",
-    address: "서울 종로구 인사동길 12", phone: "02-733-1122", hours: "07:00 ~ 21:00"
-  },
-  { 
-    id:"7", name:"명동 칼국수", category:"한식", region:"명동", rating:4.2, reviewCount:6, 
-    tags:["#칼국수","#줄서는집"], emoji:"🍝", grad:"linear-gradient(135deg,#fd79a8,#e17055)", 
-    description:"손칼국수 원조",
-    address: "서울 중구 명동10길 25", phone: "02-776-5348", hours: "10:30 ~ 21:00"
-  },
-];
-
 const CATEGORY_ICONS: Record<string, string> = {
   "한식": "🍚",
   "일식": "🍣",
@@ -87,7 +41,7 @@ function PlaceCard({ place, isFav, onFav, onClick, reviewCount }: {
         borderRadius: 24, overflow: "hidden", cursor: "pointer", background: "white",
         transform: hov ? "translateY(-4px)" : "translateY(0)",
         boxShadow: hov ? "0 12px 30px rgba(0,0,0,0.08)" : "0 2px 10px rgba(0,0,0,0.04)",
-        transition: "all 0.25s cubic-bezier(0.34,1.56,0.64,1)",
+        transition: "all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)",
         display: "flex",
         flexDirection: "column",
         height: "100%",
@@ -96,7 +50,7 @@ function PlaceCard({ place, isFav, onFav, onClick, reviewCount }: {
       <div style={{
         position: "relative", 
         width: "100%",
-        height: 200, // 고정 높이로 통일감 부여
+        height: 200, 
         overflow: "hidden",
         ...backgroundStyle,
         display: "flex", alignItems: "center", justifyContent: "center",
@@ -160,7 +114,7 @@ function PlaceCard({ place, isFav, onFav, onClick, reviewCount }: {
   );
 }
 
-// ── 상세 슬라이드 패널 ───────────────────────────────
+// ── 상세 팝업 패널 ───────────────────────────────
 function DetailPanel({ place, isFav, onFav, onClose, onReviewSubmit }: {
   place: Place;
   isFav: boolean;
@@ -171,15 +125,37 @@ function DetailPanel({ place, isFav, onFav, onClose, onReviewSubmit }: {
   const [view, setView] = useState("info"); // "info" | "review" | "reviews"
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
+  const [photos, setPhotos] = useState<File[]>([]);
+  const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
   const isValid = comment.length >= 5;
+
+  const RATING_TEXTS = ["최악이에요", "별로예요", "보통이에요", "맛있어요", "최고예요!"];
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (photos.length + files.length > 10) {
+      alert("사진은 최대 10장까지 등록 가능합니다.");
+      return;
+    }
+    setPhotos([...photos, ...files]);
+    const newPreviews = files.map(file => URL.createObjectURL(file));
+    setPhotoPreviews([...photoPreviews, ...newPreviews]);
+  };
+
+  const removePhoto = (idx: number) => {
+    setPhotos(photos.filter((_, i) => i !== idx));
+    setPhotoPreviews(photoPreviews.filter((_, i) => i !== idx));
+  };
 
   const handleSubmitReview = async () => {
     if (!isValid) return;
     try {
-      await postReview(place.id, { rating, content: comment });
+      await postReview(place.id, { rating, content: comment }, photos);
       alert("리뷰가 등록되었습니다!");
       setView("info");
       setComment("");
+      setPhotos([]);
+      setPhotoPreviews([]);
       onReviewSubmit();
     } catch (e) {
       alert("리뷰 등록에 실패했습니다.");
@@ -195,6 +171,7 @@ function DetailPanel({ place, isFav, onFav, onClose, onReviewSubmit }: {
       <style>{`
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes scaleUp { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
       `}</style>
 
       <div onClick={onClose} style={{
@@ -206,8 +183,8 @@ function DetailPanel({ place, isFav, onFav, onClose, onReviewSubmit }: {
       <div style={{
         position: "relative", width: "100%", background: "white",
         display: "flex", flexDirection: "column",
-        maxHeight: "90vh",
-        maxWidth: 500,
+        maxHeight: "85vh",
+        maxWidth: 420, // 조금 더 슬림하게 조정
         animation: "scaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)",
         boxShadow: "0 24px 80px rgba(0,0,0,0.4)",
         borderRadius: 32, overflow: "hidden",
@@ -216,45 +193,84 @@ function DetailPanel({ place, isFav, onFav, onClose, onReviewSubmit }: {
         <button 
           onClick={onClose}
           style={{
-            position: "absolute", top: 20, right: 20, zIndex: 10,
-            width: 36, height: 32, borderRadius: 12,
+            position: "absolute", top: 16, right: 16, zIndex: 10,
+            width: 32, height: 32, borderRadius: 10,
             background: "rgba(255,255,255,0.9)", backdropFilter: "blur(8px)",
-            border: "none", cursor: "pointer", fontSize: 18, color: "#111",
+            border: "none", cursor: "pointer", fontSize: 16, color: "#111",
             display: "flex", alignItems: "center", justifyContent: "center",
             boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
           }}
-        >
-          ✕
-        </button>
+        >✕</button>
 
-        <div style={{ flex: 1, overflowY: "auto", padding: "24px 24px 32px" }}>
+        <div className="hide-scrollbar" style={{ flex: 1, overflowY: "auto", padding: "20px 20px 28px" }}>
           {view === "info" ? (
             <>
-              <div style={{ position: "relative", height: 240, ...backgroundStyle, borderRadius: 24, marginBottom: 24, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                {!place.grad?.startsWith('url') && <span style={{ fontSize: 88 }}>{place.emoji || "🍴"}</span>}
+              <div style={{ position: "relative", height: 200, ...backgroundStyle, borderRadius: 24, marginBottom: 20, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                {!place.grad?.startsWith('url') && <span style={{ fontSize: 72 }}>{place.emoji || "🍴"}</span>}
               </div>
-              <h2 style={{ fontSize: 24, fontWeight: 900, marginBottom: 12, color: "#111" }}>{place.name}</h2>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 24 }}>
-                {Array.from({ length: 5 }, (_, i) => (<span key={i} style={{ fontSize: 18, color: i < Math.round(place.rating) ? "#fbbf24" : "#e5e7eb" }}>★</span>))}
-                <span style={{ fontWeight: 800, fontSize: 16, color: "#333", marginLeft: 2 }}>{place.rating}</span>
+              <h2 style={{ fontSize: 22, fontWeight: 900, marginBottom: 8, color: "#111" }}>{place.name}</h2>
+              <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 20 }}>
+                {Array.from({ length: 5 }, (_, i) => (<span key={i} style={{ fontSize: 16, color: i < Math.round(place.rating) ? "#fbbf24" : "#e5e7eb" }}>★</span>))}
+                <span style={{ fontWeight: 800, fontSize: 15, color: "#333", marginLeft: 2 }}>{place.rating}</span>
+                <span style={{ color: "#aaa", fontSize: 13, marginLeft: 4 }}>({place.review_count})</span>
               </div>
-              <div style={{ fontSize: 14, color: "#4b5563", lineHeight: 1.8, marginBottom: 28, padding: "18px", background: "#f8f9fa", borderRadius: 20, border: "1px solid #f1f3f5" }}>
-                📍 {place.road_address}
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 24 }}>
+                <div style={{ fontSize: 13, color: "#4b5563", lineHeight: 1.6, padding: "14px", background: "#f8f9fa", borderRadius: 18, border: "1px solid #f1f3f5" }}>
+                  <p style={{ display: "flex", gap: 8, marginBottom: 6 }}>
+                    <span style={{ flexShrink: 0 }}>📍</span> <span>{place.road_address}</span>
+                  </p>
+                  <p style={{ display: "flex", gap: 8, marginBottom: 6 }}>
+                    <span style={{ flexShrink: 0 }}>📞</span> <span>{place.phone || "전화번호 정보가 없습니다."}</span>
+                  </p>
+                  <p style={{ display: "flex", gap: 8 }}>
+                    <span style={{ flexShrink: 0 }}>🕐</span> <span>{"영업시간 정보 준비중"}</span>
+                  </p>
+                </div>
               </div>
-              <div style={{ display: "flex", gap: 12 }}>
-                <button onClick={() => setView("review")} style={{ flex: 1, padding: "18px", background: "#fff5f3", color: BRAND, fontWeight: 800, borderRadius: 18, border: `1.5px solid ${BRAND}33`, cursor: "pointer", fontSize: 15 }}>✍️ 리뷰 등록</button>
-                <button style={{ flex: 1.5, padding: "18px", background: `linear-gradient(135deg,${BRAND},${BRAND2})`, color: "white", fontWeight: 800, borderRadius: 18, border: "none", cursor: "pointer", fontSize: 15, boxShadow: `0 8px 20px ${BRAND}33` }}>🗺️ 지도에서 보기</button>
+
+              <div style={{ display: "flex", gap: 10 }}>
+                <button onClick={() => setView("review")} style={{ flex: 1, padding: "16px", background: "#fff5f3", color: BRAND, fontWeight: 800, borderRadius: 16, border: `1.5px solid ${BRAND}33`, cursor: "pointer", fontSize: 14 }}>✍️ 리뷰 등록</button>
+                <button style={{ flex: 1.2, padding: "16px", background: `linear-gradient(135deg,${BRAND},${BRAND2})`, color: "white", fontWeight: 800, borderRadius: 16, border: "none", cursor: "pointer", fontSize: 14, boxShadow: `0 8px 20px ${BRAND}33` }}>🗺️ 지도 보기</button>
               </div>
             </>
           ) : (
             <div>
-              <button onClick={() => setView("info")} style={{ background: "none", border: "none", fontSize: 16, cursor: "pointer", color: "#999", marginBottom: 24, display: "flex", alignItems: "center", gap: 4, fontWeight: 600 }}>← 돌아가기</button>
-              <h3 style={{ fontSize: 20, fontWeight: 900, marginBottom: 24, color: "#111" }}>{place.name} 리뷰 작성</h3>
-              <div style={{ display: "flex", justifyContent: "center", gap: 10, marginBottom: 32 }}>
-                {[1, 2, 3, 4, 5].map(v => (<button key={v} onClick={() => setRating(v)} style={{ background: "none", border: "none", fontSize: 48, cursor: "pointer", color: v <= rating ? "#fbbf24" : "#eee", transition: "transform 0.2s" }} onPointerDown={e => e.currentTarget.style.transform="scale(0.9)"} onPointerUp={e => e.currentTarget.style.transform="scale(1)"}>★</button>))}
+              <button onClick={() => setView("info")} style={{ background: "none", border: "none", fontSize: 14, cursor: "pointer", color: "#999", marginBottom: 20, display: "flex", alignItems: "center", gap: 4, fontWeight: 600 }}>← 돌아가기</button>
+              <h3 style={{ fontSize: 18, fontWeight: 900, marginBottom: 20, color: "#111" }}>리뷰 작성</h3>
+              
+              <div style={{ textAlign: "center", marginBottom: 24 }}>
+                <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 10 }}>
+                  {[1, 2, 3, 4, 5].map(v => (
+                    <button key={v} onClick={() => setRating(v)} style={{ background: "none", border: "none", fontSize: 40, cursor: "pointer", color: v <= rating ? "#fbbf24" : "#eee", transition: "transform 0.2s" }} onPointerDown={e => e.currentTarget.style.transform="scale(0.9)"} onPointerUp={e => e.currentTarget.style.transform="scale(1)"}>★</button>
+                  ))}
+                </div>
+                <p style={{ fontSize: 14, fontWeight: 700, color: BRAND }}>{RATING_TEXTS[rating - 1]}</p>
               </div>
-              <textarea value={comment} onChange={e => setComment(e.target.value)} placeholder="솔직한 리뷰를 들려주세요 (5자 이상)" style={{ width: "100%", height: 160, padding: 20, borderRadius: 24, background: "#f8f9fa", border: "1px solid #f1f3f5", fontSize: 15, outline: "none", resize: "none", boxSizing: "border-box", marginBottom: 24, lineHeight: 1.6 }} />
-              <button onClick={handleSubmitReview} disabled={!isValid} style={{ width: "100%", padding: "20px", background: isValid ? `linear-gradient(135deg,${BRAND},${BRAND2})` : "#f1f3f5", color: isValid ? "white" : "#adb5bd", fontWeight: 800, borderRadius: 20, border: "none", cursor: isValid ? "pointer" : "not-allowed", fontSize: 16, transition: "all 0.3s" }}>리뷰 등록 완료</button>
+
+              <textarea value={comment} onChange={e => setComment(e.target.value)} placeholder="최소 5자 이상 입력해주세요" style={{ width: "100%", height: 140, padding: 18, borderRadius: 20, background: "#f8f9fa", border: "1px solid #f1f3f5", fontSize: 14, outline: "none", resize: "none", boxSizing: "border-box", marginBottom: 12, lineHeight: 1.6 }} />
+              <p style={{ fontSize: 11, color: comment.length >= 5 ? "#10b981" : "#aaa", textAlign: "right", marginBottom: 20 }}>{comment.length}자 입력됨</p>
+
+              {/* 사진 등록 */}
+              <div style={{ marginBottom: 24 }}>
+                <p style={{ fontSize: 13, fontWeight: 700, marginBottom: 12, color: "#333" }}>사진 등록 ({photos.length}/10)</p>
+                <div className="hide-scrollbar" style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 4 }}>
+                  {photos.length < 10 && (
+                    <label style={{ flexShrink: 0, width: 70, height: 70, borderRadius: 14, background: "#f3f4f6", border: "1.5px dashed #d1d5db", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 20, color: "#9ca3af" }}>
+                      +
+                      <input type="file" multiple accept="image/*" onChange={handlePhotoUpload} style={{ display: "none" }} />
+                    </label>
+                  )}
+                  {photoPreviews.map((src, i) => (
+                    <div key={i} style={{ position: "relative", flexShrink: 0 }}>
+                      <img src={src} alt="preview" style={{ width: 70, height: 70, borderRadius: 14, objectFit: "cover" }} />
+                      <button onClick={() => removePhoto(i)} style={{ position: "absolute", top: -4, right: -4, width: 20, height: 20, borderRadius: "50%", background: "rgba(0,0,0,0.5)", color: "white", border: "none", fontSize: 10, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>✕</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <button onClick={handleSubmitReview} disabled={!isValid} style={{ width: "100%", padding: "18px", background: isValid ? `linear-gradient(135deg,${BRAND},${BRAND2})` : "#f1f3f5", color: isValid ? "white" : "#adb5bd", fontWeight: 800, borderRadius: 18, border: "none", cursor: isValid ? "pointer" : "not-allowed", fontSize: 15, transition: "all 0.3s" }}>리뷰 등록 완료</button>
             </div>
           )}
         </div>
