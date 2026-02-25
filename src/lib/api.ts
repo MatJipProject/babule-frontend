@@ -25,6 +25,16 @@ export interface Place {
   region?: string;
 }
 
+export interface Review {
+  id: string;
+  restaurantId: string;
+  userId: string;
+  rating: number;
+  content: string;
+  createdAt: string;
+  imageUrls?: string[];
+}
+
 const API_BASE_URL = "https://api.baebulook.site";
 
 // 맛집 최신 목록 조회
@@ -80,6 +90,18 @@ export async function registerRestaurant(restaurantData: {
   });
   if (!res.ok) throw new Error('맛집 등록에 실패했습니다.');
   return res.json();
+}
+
+// 리뷰 목록 조회
+export async function fetchReviews(restaurantId: string): Promise<Review[]> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/v1/restaurants/${restaurantId}/reviews`);
+    if (!res.ok) throw new Error('리뷰 목록을 불러오는데 실패했습니다.');
+    return res.json();
+  } catch (error) {
+    console.error("fetchReviews Error:", error);
+    return [];
+  }
 }
 
 // 리뷰 등록

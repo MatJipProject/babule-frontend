@@ -2,7 +2,7 @@
 
 import { HEADER_HEIGHT } from "@/components/Header";
 import { useState, useEffect } from "react";
-import { fetchPlaces, Place, postReview, searchRestaurants } from "@/lib/api";
+import { fetchPlaces, Place, postReview, searchRestaurants, fetchReviews, Review } from "@/lib/api";
 
 const CATEGORY_ICONS: Record<string, string> = {
   "한식": "🍚",
@@ -127,9 +127,21 @@ function DetailPanel({ place, isFav, onFav, onClose, onReviewSubmit }: {
   const [comment, setComment] = useState("");
   const [photos, setPhotos] = useState<File[]>([]);
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [loadingReviews, setLoadingReviews] = useState(false);
   const isValid = comment.length >= 5;
 
   const RATING_TEXTS = ["최악이에요", "별로예요", "보통이에요", "맛있어요", "최고예요!"];
+
+  useEffect(() => {
+    if (view === "reviews") {
+      setLoadingReviews(true);
+      fetchReviews(place.id).then(data => {
+        setReviews(data);
+        setLoadingReviews(false);
+      });
+    }
+  }, [view, place.id]);
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -240,26 +252,26 @@ function DetailPanel({ place, isFav, onFav, onClose, onReviewSubmit }: {
                 </div>
 
                 {/* 상세 리스트 */}
-                <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-                  <div style={{ display: "flex", gap: 14 }}>
-                    <span style={{ fontSize: 20, color: BRAND }}>📍</span>
+                <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+                  <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
+                    <span style={{ fontSize: 20, color: "#E8513D" }}>📍</span>
                     <div>
-                      <p style={{ fontSize: 10, color: "#9ca3af", marginBottom: 2 }}>주소</p>
-                      <p style={{ fontSize: 13, color: "#374151", fontWeight: 500 }}>{place.road_address}</p>
+                      <p style={{ fontSize: 11, color: "#9ca3af", marginBottom: 4 }}>주소</p>
+                      <p style={{ fontSize: 14, color: "#374151", fontWeight: 500, lineHeight: 1.4 }}>{place.road_address}</p>
                     </div>
                   </div>
-                  <div style={{ display: "flex", gap: 14 }}>
-                    <span style={{ fontSize: 20, color: BRAND }}>📞</span>
+                  <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
+                    <span style={{ fontSize: 20, color: "#E8513D" }}>📞</span>
                     <div>
-                      <p style={{ fontSize: 10, color: "#9ca3af", marginBottom: 2 }}>전화</p>
-                      <p style={{ fontSize: 13, color: "#374151", fontWeight: 500 }}>{place.phone || "02-333-1234"}</p>
+                      <p style={{ fontSize: 11, color: "#9ca3af", marginBottom: 4 }}>전화</p>
+                      <p style={{ fontSize: 14, color: "#374151", fontWeight: 500 }}>{place.phone || "02-333-1234"}</p>
                     </div>
                   </div>
-                  <div style={{ display: "flex", gap: 14 }}>
-                    <span style={{ fontSize: 20, color: BRAND }}>🕐</span>
+                  <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
+                    <span style={{ fontSize: 20, color: "#9ca3af" }}>🕐</span>
                     <div>
-                      <p style={{ fontSize: 10, color: "#9ca3af", marginBottom: 2 }}>영업시간</p>
-                      <p style={{ fontSize: 13, color: "#374151", fontWeight: 500 }}>{"11:30 ~ 23:00"}</p>
+                      <p style={{ fontSize: 11, color: "#9ca3af", marginBottom: 4 }}>영업시간</p>
+                      <p style={{ fontSize: 14, color: "#374151", fontWeight: 500 }}>{"11:30 ~ 23:00"}</p>
                     </div>
                   </div>
                 </div>
@@ -317,10 +329,29 @@ function DetailPanel({ place, isFav, onFav, onClose, onReviewSubmit }: {
             <div style={{ padding: "40px 24px 20px" }}>
               <button onClick={() => setView("info")} style={{ background: "none", border: "none", fontSize: 14, cursor: "pointer", color: "#999", marginBottom: 20, display: "flex", alignItems: "center", gap: 4, fontWeight: 600 }}>← 돌아가기</button>
               <h3 style={{ fontSize: 20, fontWeight: 900, marginBottom: 24, color: "#111" }}>리뷰 목록</h3>
-              <div style={{ textAlign: "center", padding: "40px 0", color: "#aaa" }}>
-                <span style={{ fontSize: 40, display: "block", marginBottom: 10 }}>💬</span>
-                등록된 리뷰가 없습니다.
-              </div>
+              {loadingReviews ? (
+                <p style={{ textAlign: "center", padding: "40px 0", color: "#aaa" }}>불러오는 중...</p>
+              ) : reviews.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "40px 0", color: "#aaa" }}>
+                  <span style={{ fontSize: 40, display: "block", marginBottom: 10 }}>💬</span>
+                  등록된 리뷰가 없습니다.
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                  {reviews.map(rev => (
+                    <div key={rev.id} style={{ borderBottom: "1px solid #f0f0f0", paddingBottom: 20 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+                        <div>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: "#333", marginRight: 8 }}>사용자</span>
+                          <span style={{ fontSize: 11, color: "#fbbf24" }}>★ {rev.rating}</span>
+                        </div>
+                        <span style={{ fontSize: 11, color: "#9ca3af" }}>{new Date(rev.createdAt).toLocaleDateString()}</span>
+                      </div>
+                      <p style={{ fontSize: 13, color: "#4b5563", lineHeight: 1.6 }}>{rev.content}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
