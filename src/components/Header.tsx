@@ -12,7 +12,6 @@ const NAV_ITEMS = [
   { label: "맛집 지도", href: "/map" },
   { label: "메뉴 추천", href: "/roulette" },
   { label: "맛집 목록", href: "/list" },
-  { label: "맛집 추가", href: "/add" },
   { label: "마이", href: "/my" },
 ];
 
