@@ -30,12 +30,10 @@ const API_BASE_URL = "https://api.baebulook.site";
 // 맛집 최신 목록 조회
 export async function fetchPlaces(): Promise<Place[]> {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/v1/restaurants/latest?size=20`);
+    const res = await fetch(`${API_BASE_URL}/api/v1/restaurants/latest`);
     if (!res.ok) throw new Error('맛집 목록을 불러오는데 실패했습니다.');
-    const data = await res.json();
-    // API 응답 구조가 { content: [] } 형태이므로 data.content 사용
-    const list: any[] = data.content || [];
-    
+    const list: any[] = await res.json();
+
     return list.map(p => ({
       ...p,
       id: p.id.toString(),
