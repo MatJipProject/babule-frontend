@@ -416,7 +416,7 @@ export default function ListPage() {
   const filtered = places.filter(p => (cat === "전체" || p.category === cat) && (region === "전체" || (p.region && p.region.includes(region))) && (!onlyFav || favs.has(p.id)));
 
   return (
-    <div style={{ background: "#f5f4f2", minHeight: "100vh" }}>
+    <div style={{ background: "#f5f4f2", minHeight: "100vh", overflowX: "hidden" }}>
       <style>{`
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -444,7 +444,7 @@ export default function ListPage() {
           margin: 0 auto;
         }
       `}</style>
-      <div style={{ background: "white", padding: "18px 18px 0", position: "sticky", top: HEADER_HEIGHT, zIndex: 30, boxShadow: "0 1px 0 #eeebe6", margin: "0 -1rem" }}>
+      <div style={{ background: "white", padding: "18px 18px 0", position: "sticky", top: HEADER_HEIGHT, zIndex: 30, boxShadow: "0 1px 0 #eeebe6" }}>
         <div className="main-container">
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, padding: "0 18px" }}>
             <h1 style={{ fontSize: 20, fontWeight: 900, color: "#111" }}>🍽️ <span style={{ color: BRAND }}>맛집</span> 목록</h1>
