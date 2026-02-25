@@ -85,12 +85,20 @@ export async function registerRestaurant(restaurantData: {
 // 리뷰 등록
 export async function postReview(restaurantId: string, review: {
   rating: number;
-  comment: string;
-}): Promise<any> {
-  const res = await fetch(`${API_BASE_URL}/api/v1/restaurants/${restaurantId}/reviews`, {
+  content: string;
+}, files?: File[]): Promise<any> {
+  const formData = new FormData();
+  formData.append('request_data', JSON.stringify({
+    restaurant_id: Number(restaurantId),
+    rating: review.rating,
+    content: review.content,
+  }));
+  if (files) {
+    files.forEach(file => formData.append('files', file));
+  }
+  const res = await fetch(`${API_BASE_URL}/api/v1/reviews/register`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(review),
+    body: formData,
   });
   if (!res.ok) throw new Error('리뷰 등록에 실패했습니다.');
   return res.json();

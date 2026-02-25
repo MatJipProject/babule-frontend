@@ -164,7 +164,7 @@ function DetailPanel({ place, isFav, onFav, onClose, onReviewSubmit }: {
   const handleSubmitReview = async () => {
     if (!isValid) return;
     try {
-      await postReview(place.id, { rating, comment });
+      await postReview(place.id, { rating, content: comment });
       alert("리뷰가 등록되었습니다!");
       setView("info");
       setComment("");
