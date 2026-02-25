@@ -1,8 +1,8 @@
 "use client";
 
 import { HEADER_HEIGHT } from "@/components/Header";
-import { useState, useEffect } from "react";
-import { fetchPlaces, Place, postReview, searchRestaurants, fetchReviews, Review } from "@/lib/api";
+import { fetchPlaces, fetchReviews, Place, postReview, Review, searchRestaurants } from "@/lib/api";
+import { useEffect, useState } from "react";
 
 const CATEGORY_ICONS: Record<string, string> = {
   "한식": "🍚",
@@ -134,6 +134,14 @@ function DetailPanel({ place, isFav, onFav, onClose, onReviewSubmit }: {
   const RATING_TEXTS = ["최악이에요", "별로예요", "보통이에요", "맛있어요", "최고예요!"];
 
   useEffect(() => {
+    const originalStyle = window.getComputedStyle(document.body).overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = originalStyle;
+    };
+  }, []);
+
+  useEffect(() => {
     if (view === "reviews") {
       setLoadingReviews(true);
       fetchReviews(place.id).then(data => {
@@ -184,6 +192,7 @@ function DetailPanel({ place, isFav, onFav, onClose, onReviewSubmit }: {
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes scaleUp { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { overscroll-behavior: contain; -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
       <div onClick={onClose} style={{
@@ -198,7 +207,7 @@ function DetailPanel({ place, isFav, onFav, onClose, onReviewSubmit }: {
         maxHeight: "92vh",
         maxWidth: 400,
         animation: "scaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)",
-        boxShadow: "0 30px 100px rgba(0,0,0,0.4)",
+        boxShadow: "0 10px 100px rgba(0,0,0,0.4)",
         borderRadius: 36, overflow: "hidden",
       }}>
         {/* 상단 핸들 바 */}
@@ -206,11 +215,11 @@ function DetailPanel({ place, isFav, onFav, onClose, onReviewSubmit }: {
           <div style={{ width: 36, height: 4, borderRadius: 99, background: "#e5e7eb" }} />
         </div>
 
-        <div className="hide-scrollbar" style={{ flex: 1, overflowY: "auto", padding: "0 0 24px" }}>
+        <div className="hide-scrollbar" style={{ flex: 1, overflowY: "auto", padding: "28px 0 8px" }}>
           {view === "info" ? (
             <>
               {/* 이미지 헤더 */}
-              <div style={{ position: "relative", height: 220, ...backgroundStyle, display: "flex", alignItems: "center", justifyContent: "center", margin: "14px 14px 0", borderRadius: 28 }}>
+              <div style={{ position: "relative", height: 240, ...backgroundStyle, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 14px 0", borderRadius: 28 }}>
                 {!place.grad?.startsWith('url') && <span style={{ fontSize: 80, filter: "drop-shadow(0 10px 20px rgba(0,0,0,0.15))" }}>{place.emoji || "🍴"}</span>}
                 
                 {/* 하트 버튼 */}
@@ -252,7 +261,7 @@ function DetailPanel({ place, isFav, onFav, onClose, onReviewSubmit }: {
                 </div>
 
                 {/* 상세 리스트 */}
-                <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 24, paddingBottom: 20 }}>
                   <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
                     <span style={{ fontSize: 20, color: "#E8513D" }}>📍</span>
                     <div>
@@ -276,21 +285,11 @@ function DetailPanel({ place, isFav, onFav, onClose, onReviewSubmit }: {
                   </div>
                 </div>
               </div>
-
-              {/* 하단 버튼 */}
-              <div style={{ padding: "0 24px", display: "flex", gap: 12 }}>
-                <button onClick={() => setView("review")} style={{ flex: 1, padding: "16px", background: "white", color: BRAND, fontWeight: 800, borderRadius: 18, border: `1.5px solid ${BRAND}33`, cursor: "pointer", fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-                  ✍️ 리뷰 등록
-                </button>
-                <button style={{ flex: 1.5, padding: "16px", background: `linear-gradient(135deg,${BRAND},${BRAND2})`, color: "white", fontWeight: 800, borderRadius: 18, border: "none", cursor: "pointer", fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, boxShadow: `0 8px 24px ${BRAND}44` }}>
-                  🗺️ 지도에서 보기
-                </button>
-              </div>
             </>
           ) : view === "review" ? (
-            <div style={{ padding: "40px 24px 20px" }}>
+            <div style={{ padding: "32px 24px 24px" }}>
               <button onClick={() => setView("info")} style={{ background: "none", border: "none", fontSize: 14, cursor: "pointer", color: "#999", marginBottom: 20, display: "flex", alignItems: "center", gap: 4, fontWeight: 600 }}>← 돌아가기</button>
-              <h3 style={{ fontSize: 20, fontWeight: 900, marginBottom: 24, color: "#111" }}>리뷰 작성</h3>
+              <h2 style={{ fontSize: 20, fontWeight: 900, marginBottom: 24, color: "#111" }}>리뷰 작성</h2>
               
               <div style={{ textAlign: "center", marginBottom: 24 }}>
                 <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 10 }}>
@@ -322,13 +321,11 @@ function DetailPanel({ place, isFav, onFav, onClose, onReviewSubmit }: {
                   ))}
                 </div>
               </div>
-
-              <button onClick={handleSubmitReview} disabled={!isValid} style={{ width: "100%", padding: "20px", background: isValid ? `linear-gradient(135deg,${BRAND},${BRAND2})` : "#f1f3f5", color: isValid ? "white" : "#adb5bd", fontWeight: 800, borderRadius: 20, border: "none", cursor: isValid ? "pointer" : "not-allowed", fontSize: 16, transition: "all 0.3s" }}>리뷰 등록 완료</button>
             </div>
           ) : (
-            <div style={{ padding: "40px 24px 20px" }}>
+            <div style={{ padding: "32px 24px 24px" }}>
               <button onClick={() => setView("info")} style={{ background: "none", border: "none", fontSize: 14, cursor: "pointer", color: "#999", marginBottom: 20, display: "flex", alignItems: "center", gap: 4, fontWeight: 600 }}>← 돌아가기</button>
-              <h3 style={{ fontSize: 20, fontWeight: 900, marginBottom: 24, color: "#111" }}>리뷰 목록</h3>
+              <h2 style={{ fontSize: 24, fontWeight: 900, marginBottom: 24, color: "#111" }}>리뷰 목록</h2>
               {loadingReviews ? (
                 <p style={{ textAlign: "center", padding: "40px 0", color: "#aaa" }}>불러오는 중...</p>
               ) : reviews.length === 0 ? (
@@ -359,6 +356,23 @@ function DetailPanel({ place, isFav, onFav, onClose, onReviewSubmit }: {
             </div>
           )}
         </div>
+
+        {/* 하단 버튼 (고정) */}
+        {view === "info" && (
+          <div style={{ padding: "12px 24px 16px", display: "flex", gap: 12, background: "white", borderTop: "1px solid #f3f4f6", zIndex: 10 }}>
+            <button onClick={() => setView("review")} style={{ flex: 1, padding: "16px", background: "white", color: BRAND, fontWeight: 800, borderRadius: 18, border: `1.5px solid ${BRAND}33`, cursor: "pointer", fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+              ✍️ 리뷰 등록
+            </button>
+            <button style={{ flex: 1.5, padding: "16px", background: `linear-gradient(135deg,${BRAND},${BRAND2})`, color: "white", fontWeight: 800, borderRadius: 18, border: "none", cursor: "pointer", fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, boxShadow: `0 8px 24px ${BRAND}44` }}>
+              🗺️ 지도에서 보기
+            </button>
+          </div>
+        )}
+        {view === "review" && (
+          <div style={{ padding: "12px 24px 16px", background: "white", borderTop: "1px solid #f3f4f6", zIndex: 10 }}>
+            <button onClick={handleSubmitReview} disabled={!isValid} style={{ width: "100%", padding: "18px", background: isValid ? `linear-gradient(135deg,${BRAND},${BRAND2})` : "#f1f3f5", color: isValid ? "white" : "#adb5bd", fontWeight: 800, borderRadius: 18, border: "none", cursor: isValid ? "pointer" : "not-allowed", fontSize: 16, transition: "all 0.3s" }}>리뷰 등록 완료</button>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -443,28 +457,40 @@ export default function ListPage() {
           max-width: 1200px;
           margin: 0 auto;
         }
+
+        .fixed-filter-section {
+          position: fixed;
+          top: ${HEADER_HEIGHT}px;
+          left: 0;
+          right: 0;
+          background: white;
+          z-index: 30;
+          box-shadow: 0 1px 0 #eeebe6;
+        }
       `}</style>
-      <div style={{ background: "white", padding: "18px 18px 0", position: "sticky", top: HEADER_HEIGHT, zIndex: 30, boxShadow: "0 1px 0 #eeebe6" }}>
-        <div className="main-container">
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, padding: "0 18px" }}>
+
+      {/* 고정된 필터 섹션 */}
+      <div className="fixed-filter-section">
+        <div className="main-container" style={{ padding: "18px 18px 12px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, padding: "0 4px" }}>
             <h1 style={{ fontSize: 20, fontWeight: 900, color: "#111" }}>🍽️ <span style={{ color: BRAND }}>맛집</span> 목록</h1>
             <button onClick={() => setOnlyFav(!onlyFav)} style={{ padding: "5px 12px", borderRadius: 99, fontSize: 11, fontWeight: 700, border: `1.5px solid ${onlyFav ? "#fca5a5" : "#e5e7eb"}`, background: onlyFav ? "#fef2f2" : "white", color: onlyFav ? "#ef4444" : "#9ca3af", cursor: "pointer" }}>{onlyFav ? "❤️ 즐겨찾기" : "🤍 즐겨찾기"}</button>
           </div>
           
-          <form onSubmit={handleSearch} style={{ position: "relative", marginBottom: 12, padding: "0 18px" }}>
-            <span style={{ position: "absolute", left: 34, top: "50%", transform: "translateY(-50%)", color: "#aaa", fontSize: 14 }}>🔍</span>
+          <form onSubmit={handleSearch} style={{ position: "relative", marginBottom: 12 }}>
+            <span style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", color: "#aaa", fontSize: 14 }}>🔍</span>
             <input value={query} onChange={e => setQuery(e.target.value)} placeholder="맛집 이름을 검색하세요" style={{ width: "100%", padding: "12px 16px 12px 42px", background: "#f3f4f6", border: "none", borderRadius: 24, fontSize: 13, outline: "none", boxSizing: "border-box" }} />
           </form>
 
-          <div style={{ padding: "0 18px 12px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-              <span style={{ fontSize: 12, fontWeight: 800, color: "#666" }}>📍 지역</span>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 12, fontWeight: 800, color: "#666", flexShrink: 0 }}>📍 지역</span>
               <div className="hide-scrollbar" style={{ display: "flex", gap: 7, overflowX: "auto", flex: 1 }}>
-                {REGIONS.map(r => (<button key={r} onClick={() => setRegion(r)} style={{ flexShrink: 0, padding: "6px 14px", borderRadius: 99, fontSize: 11, fontWeight: 700, border: "none", background: region === r ? `linear-gradient(135deg,${BRAND},${BRAND2})` : "#f3f4f6", color: region === r ? "white" : "#6b7280" }}>{r}</button>))}
+                {REGIONS.map(r => (<button key={r} onClick={() => setRegion(r)} style={{ flexShrink: 0, padding: "6px 14px", borderRadius: 99, fontSize: 11, fontWeight: 700, border: "none", background: region === r ? BRAND : "#f3f4f6", color: region === r ? "white" : "#6b7280" }}>{r}</button>))}
               </div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ fontSize: 12, fontWeight: 800, color: "#666" }}>🍴 분야</span>
+              <span style={{ fontSize: 12, fontWeight: 800, color: "#666", flexShrink: 0 }}>🍴 분야</span>
               <div className="hide-scrollbar" style={{ display: "flex", gap: 7, overflowX: "auto", flex: 1 }}>
                 {CATEGORIES.map(c => (<button key={c} onClick={() => setCat(c)} style={{ flexShrink: 0, padding: "5px 14px", borderRadius: 99, fontSize: 11, fontWeight: 700, border: `1.5px solid ${cat === c ? BRAND : "#e5e7eb"}`, background: cat === c ? "#fff5f3" : "white", color: cat === c ? BRAND : "#9ca3af" }}>{CATEGORY_ICONS[c]} {c}</button>))}
               </div>
@@ -473,7 +499,8 @@ export default function ListPage() {
         </div>
       </div>
 
-      <div className="main-container" style={{ padding: "24px 18px 48px" }}>
+      {/* 리스트 영역 (고정 헤더만큼 패딩 추가) */}
+      <div className="main-container" style={{ padding: "210px 18px 48px" }}>
         {loading && places.length === 0 ? (
           <div style={{ textAlign: "center", padding: "80px 0", color: "#9ca3af" }}>
             <div className="animate-bounce" style={{ fontSize: 40, marginBottom: 16 }}>🍲</div>
