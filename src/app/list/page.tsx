@@ -191,60 +191,70 @@ function DetailPanel({ place, isFav, onFav, onClose, onReviewSubmit }: {
     : { background: place.grad || "#eee" };
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 200, display: "flex", alignItems: "flex-end" }}>
+    <div style={{ position: "fixed", inset: 0, zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}>
       <style>{`
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        @keyframes dimIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes scaleUp { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
       `}</style>
 
       <div onClick={onClose} style={{
         position: "absolute", inset: 0,
-        background: "rgba(0,0,0,0.42)", backdropFilter: "blur(3px)",
-        animation: "dimIn 0.25s ease",
+        background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)",
+        animation: "fadeIn 0.2s ease",
       }} />
 
       <div style={{
         position: "relative", width: "100%", background: "white",
         display: "flex", flexDirection: "column",
-        maxHeight: "88vh",
-        maxWidth: 500, // 데스크탑에서 너무 넓어지지 않게 제한
-        margin: "0 auto", // 중앙 정렬
-        animation: "slideUp 0.32s cubic-bezier(0.32,0.72,0,1)",
-        boxShadow: "0 -8px 40px rgba(0,0,0,0.18)",
-        borderRadius: "24px 24px 0 0", overflow: "hidden",
+        maxHeight: "90vh",
+        maxWidth: 500,
+        animation: "scaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)",
+        boxShadow: "0 24px 80px rgba(0,0,0,0.4)",
+        borderRadius: 32, overflow: "hidden",
       }}>
-        <div style={{ display: "flex", justifyContent: "center", padding: "12px 0 4px", flexShrink: 0 }}>
-          <div style={{ width: 40, height: 4, borderRadius: 99, background: "#e5e7eb" }} />
-        </div>
+        {/* 닫기 버튼 */}
+        <button 
+          onClick={onClose}
+          style={{
+            position: "absolute", top: 20, right: 20, zIndex: 10,
+            width: 36, height: 32, borderRadius: 12,
+            background: "rgba(255,255,255,0.9)", backdropFilter: "blur(8px)",
+            border: "none", cursor: "pointer", fontSize: 18, color: "#111",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
+          }}
+        >
+          ✕
+        </button>
 
-        <div style={{ flex: 1, overflowY: "auto", padding: "20px 20px 110px" }}>
+        <div style={{ flex: 1, overflowY: "auto", padding: "24px 24px 32px" }}>
           {view === "info" ? (
             <>
-              <div style={{ position: "relative", height: 200, ...backgroundStyle, borderRadius: 20, marginBottom: 20, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                {!place.grad?.startsWith('url') && <span style={{ fontSize: 80 }}>{place.emoji || "🍴"}</span>}
+              <div style={{ position: "relative", height: 240, ...backgroundStyle, borderRadius: 24, marginBottom: 24, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                {!place.grad?.startsWith('url') && <span style={{ fontSize: 88 }}>{place.emoji || "🍴"}</span>}
               </div>
-              <h2 style={{ fontSize: 21, fontWeight: 900, marginBottom: 10 }}>{place.name}</h2>
-              <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 20 }}>
-                {Array.from({ length: 5 }, (_, i) => (<span key={i} style={{ fontSize: 15, color: i < Math.round(place.rating) ? "#fbbf24" : "#e5e7eb" }}>★</span>))}
-                <span style={{ fontWeight: 800, fontSize: 14 }}>{place.rating}</span>
+              <h2 style={{ fontSize: 24, fontWeight: 900, marginBottom: 12, color: "#111" }}>{place.name}</h2>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 24 }}>
+                {Array.from({ length: 5 }, (_, i) => (<span key={i} style={{ fontSize: 18, color: i < Math.round(place.rating) ? "#fbbf24" : "#e5e7eb" }}>★</span>))}
+                <span style={{ fontWeight: 800, fontSize: 16, color: "#333", marginLeft: 2 }}>{place.rating}</span>
               </div>
-              <div style={{ fontSize: 13, color: "#4b5563", lineHeight: 1.8, marginBottom: 20, padding: "14px", background: "#f9f9f9", borderRadius: 14 }}>
+              <div style={{ fontSize: 14, color: "#4b5563", lineHeight: 1.8, marginBottom: 28, padding: "18px", background: "#f8f9fa", borderRadius: 20, border: "1px solid #f1f3f5" }}>
                 📍 {place.road_address}
               </div>
-              <div style={{ display: "flex", gap: 10 }}>
-                <button onClick={() => setView("review")} style={{ flex: 1, padding: "15px", background: "#fff5f3", color: BRAND, fontWeight: 800, borderRadius: 14, border: `1px solid ${BRAND}44`, cursor: "pointer" }}>✍️ 리뷰 등록</button>
-                <button style={{ flex: 1.5, padding: "15px", background: `linear-gradient(135deg,${BRAND},${BRAND2})`, color: "white", fontWeight: 800, borderRadius: 14, border: "none", cursor: "pointer" }}>🗺️ 지도에서 보기</button>
+              <div style={{ display: "flex", gap: 12 }}>
+                <button onClick={() => setView("review")} style={{ flex: 1, padding: "18px", background: "#fff5f3", color: BRAND, fontWeight: 800, borderRadius: 18, border: `1.5px solid ${BRAND}33`, cursor: "pointer", fontSize: 15 }}>✍️ 리뷰 등록</button>
+                <button style={{ flex: 1.5, padding: "18px", background: `linear-gradient(135deg,${BRAND},${BRAND2})`, color: "white", fontWeight: 800, borderRadius: 18, border: "none", cursor: "pointer", fontSize: 15, boxShadow: `0 8px 20px ${BRAND}33` }}>🗺️ 지도에서 보기</button>
               </div>
             </>
           ) : (
             <div>
-              <button onClick={() => setView("info")} style={{ background: "none", border: "none", fontSize: 16, cursor: "pointer", color: "#666", marginBottom: 20 }}>← 뒤로</button>
-              <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 20 }}>{place.name} 리뷰 작성</h3>
-              <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 20 }}>
-                {[1, 2, 3, 4, 5].map(v => (<button key={v} onClick={() => setRating(v)} style={{ background: "none", border: "none", fontSize: 40, cursor: "pointer", color: v <= rating ? "#fbbf24" : "#eee" }}>★</button>))}
+              <button onClick={() => setView("info")} style={{ background: "none", border: "none", fontSize: 16, cursor: "pointer", color: "#999", marginBottom: 24, display: "flex", alignItems: "center", gap: 4, fontWeight: 600 }}>← 돌아가기</button>
+              <h3 style={{ fontSize: 20, fontWeight: 900, marginBottom: 24, color: "#111" }}>{place.name} 리뷰 작성</h3>
+              <div style={{ display: "flex", justifyContent: "center", gap: 10, marginBottom: 32 }}>
+                {[1, 2, 3, 4, 5].map(v => (<button key={v} onClick={() => setRating(v)} style={{ background: "none", border: "none", fontSize: 48, cursor: "pointer", color: v <= rating ? "#fbbf24" : "#eee", transition: "transform 0.2s" }} onPointerDown={e => e.currentTarget.style.transform="scale(0.9)"} onPointerUp={e => e.currentTarget.style.transform="scale(1)"}>★</button>))}
               </div>
-              <textarea value={comment} onChange={e => setComment(e.target.value)} placeholder="솔직한 리뷰를 들려주세요 (5자 이상)" style={{ width: "100%", height: 120, padding: 16, borderRadius: 16, background: "#f9f9f9", border: "1px solid #eee", fontSize: 14, outline: "none", resize: "none", boxSizing: "border-box", marginBottom: 20 }} />
-              <button onClick={handleSubmitReview} disabled={!isValid} style={{ width: "100%", padding: "16px", background: isValid ? `linear-gradient(135deg,${BRAND},${BRAND2})` : "#eee", color: isValid ? "white" : "#999", fontWeight: 800, borderRadius: 14, border: "none", cursor: isValid ? "pointer" : "not-allowed" }}>리뷰 등록 완료</button>
+              <textarea value={comment} onChange={e => setComment(e.target.value)} placeholder="솔직한 리뷰를 들려주세요 (5자 이상)" style={{ width: "100%", height: 160, padding: 20, borderRadius: 24, background: "#f8f9fa", border: "1px solid #f1f3f5", fontSize: 15, outline: "none", resize: "none", boxSizing: "border-box", marginBottom: 24, lineHeight: 1.6 }} />
+              <button onClick={handleSubmitReview} disabled={!isValid} style={{ width: "100%", padding: "20px", background: isValid ? `linear-gradient(135deg,${BRAND},${BRAND2})` : "#f1f3f5", color: isValid ? "white" : "#adb5bd", fontWeight: 800, borderRadius: 20, border: "none", cursor: isValid ? "pointer" : "not-allowed", fontSize: 16, transition: "all 0.3s" }}>리뷰 등록 완료</button>
             </div>
           )}
         </div>
@@ -304,6 +314,7 @@ export default function ListPage() {
 
   const filtered = places.filter(p => (cat === "전체" || p.category === cat) && (region === "전체" || (p.region && p.region.includes(region))) && (!onlyFav || favs.has(p.id)));
 
+  return (
     <div style={{ background: "#f5f4f2", minHeight: "100vh" }}>
       <style>{`
         .hide-scrollbar::-webkit-scrollbar { display: none; }
