@@ -1,3 +1,9 @@
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+}
+
 export interface Place {
   id: string;
   name: string;
@@ -90,4 +96,18 @@ export async function postReview(restaurantId: string, review: {
   });
   if (!res.ok) throw new Error('리뷰 등록에 실패했습니다.');
   return res.json();
+}
+
+// 로그인 (임시 Mock)
+export async function login(): Promise<User> {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({ id: "1", name: "Test User", email: "test@example.com" });
+    }, 500);
+  });
+}
+
+// 로그아웃 (임시 Mock)
+export async function logout(): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, 500));
 }
