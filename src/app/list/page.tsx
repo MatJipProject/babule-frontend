@@ -328,9 +328,6 @@ function DetailPanel({ place, isFav, onFav, onClose, onReviewSubmit }: {
     </div>
   );
 }
-    </div>
-  );
-}
 
 // ── 메인 ───────────────────────────────────────────
 export default function ListPage() {
