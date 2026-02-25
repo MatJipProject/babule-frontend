@@ -84,62 +84,74 @@ function PlaceCard({ place, isFav, onFav, onClick, reviewCount }: {
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
       style={{
-        borderRadius: 18, overflow: "hidden", cursor: "pointer", background: "white",
+        borderRadius: 24, overflow: "hidden", cursor: "pointer", background: "white",
         transform: hov ? "translateY(-4px)" : "translateY(0)",
-        boxShadow: hov ? "0 12px 30px rgba(0,0,0,0.13)" : "0 2px 10px rgba(0,0,0,0.07)",
-        transition: "all 0.22s cubic-bezier(0.34,1.56,0.64,1)",
+        boxShadow: hov ? "0 12px 30px rgba(0,0,0,0.08)" : "0 2px 10px rgba(0,0,0,0.04)",
+        transition: "all 0.25s cubic-bezier(0.34,1.56,0.64,1)",
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
       }}
     >
       <div style={{
-        position: "relative", height: 118, overflow: "hidden",
+        position: "relative", 
+        width: "100%",
+        height: 200, // 고정 높이로 통일감 부여
+        overflow: "hidden",
         ...backgroundStyle,
         display: "flex", alignItems: "center", justifyContent: "center",
       }}>
         {!place.grad?.startsWith('url') && (
           <span style={{
-            fontSize: 48,
-            transform: hov ? "scale(1.15)" : "scale(1)",
-            transition: "transform 0.35s ease",
-            filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.2))",
-            display: "block",
+            fontSize: 56,
+            transform: hov ? "scale(1.1)" : "scale(1)",
+            transition: "transform 0.4s ease",
+            filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.15))",
           }}>{place.emoji || "🍴"}</span>
         )}
 
         <span style={{
-          position: "absolute", top: 8, left: 8,
-          fontSize: 9, fontWeight: 700, color: "white",
-          background: "rgba(0,0,0,0.35)", backdropFilter: "blur(6px)",
-          padding: "2px 7px", borderRadius: 99,
-          border: "1px solid rgba(255,255,255,0.25)",
+          position: "absolute", top: 12, left: 12,
+          fontSize: 10, fontWeight: 700, color: "white",
+          background: "rgba(0,0,0,0.4)", backdropFilter: "blur(8px)",
+          padding: "4px 10px", borderRadius: 99,
+          border: "1px solid rgba(255,255,255,0.2)",
         }}>{place.category}</span>
 
         <button onClick={e => { e.stopPropagation(); onFav(); }} style={{
-          position: "absolute", top: 6, right: 6,
-          width: 26, height: 26, borderRadius: "50%",
-          background: "rgba(255,255,255,0.88)", border: "none",
-          cursor: "pointer", fontSize: 12,
+          position: "absolute", top: 10, right: 10,
+          width: 32, height: 32, borderRadius: "50%",
+          background: "rgba(255,255,255,0.9)", border: "none",
+          cursor: "pointer", fontSize: 14,
           display: "flex", alignItems: "center", justifyContent: "center",
-          boxShadow: "0 1px 4px rgba(0,0,0,0.12)",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
         }}>{isFav ? "❤️" : "🤍"}</button>
       </div>
 
-      <div style={{ padding: "10px 10px 12px" }}>
+      <div style={{ padding: "16px 18px 20px", flex: 1, display: "flex", flexDirection: "column" }}>
         <h3 style={{
-          fontSize: 12, fontWeight: 800, color: "#111", marginBottom: 5,
-          whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+          fontSize: 16, fontWeight: 800, color: "#111", marginBottom: 6,
+          display: "-webkit-box", WebkitLineClamp: 1, WebkitBoxOrient: "vertical", overflow: "hidden"
         }}>{place.name}</h3>
-        <div style={{ display: "flex", alignItems: "center", gap: 3, marginBottom: 7 }}>
-          <span style={{ fontSize: 11, color: "#fbbf24" }}>★</span>
-          <span style={{ fontSize: 11, fontWeight: 700, color: "#111" }}>{place.rating}</span>
-          <span style={{ fontSize: 10, color: "#b0b0b0" }}>({reviewCount})</span>
-          <span style={{ marginLeft: "auto", fontSize: 9, color: "#b0b0b0" }}>📍{place.region}</span>
+        
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
+            <span style={{ fontSize: 12, color: "#fbbf24" }}>★</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: "#333" }}>{place.rating}</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <span style={{ fontSize: 11, color: "#aaa" }}>💬</span>
+            <span style={{ fontSize: 12, fontWeight: 500, color: "#777" }}>{reviewCount}</span>
+          </div>
+          <span style={{ marginLeft: "auto", fontSize: 11, color: "#999", fontWeight: 500 }}>📍 {place.region}</span>
         </div>
-        <div style={{ display: "flex", gap: 4 }}>
-          {place.tags?.slice(0, 2).map(t => (
+
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: "auto" }}>
+          {place.tags?.slice(0, 3).map(t => (
             <span key={t} style={{
-              fontSize: 9, padding: "2px 7px", borderRadius: 99,
-              background: "#fff5f3", color: BRAND, fontWeight: 600,
-              border: `1px solid ${BRAND}28`, whiteSpace: "nowrap",
+              fontSize: 10, padding: "3px 9px", borderRadius: 8,
+              background: "#f8f9fa", color: "#666", fontWeight: 600,
+              border: "1px solid #f0f0f0"
             }}>{t}</span>
           ))}
         </div>
@@ -195,6 +207,8 @@ function DetailPanel({ place, isFav, onFav, onClose, onReviewSubmit }: {
         position: "relative", width: "100%", background: "white",
         display: "flex", flexDirection: "column",
         maxHeight: "88vh",
+        maxWidth: 500, // 데스크탑에서 너무 넓어지지 않게 제한
+        margin: "0 auto", // 중앙 정렬
         animation: "slideUp 0.32s cubic-bezier(0.32,0.72,0,1)",
         boxShadow: "0 -8px 40px rgba(0,0,0,0.18)",
         borderRadius: "24px 24px 0 0", overflow: "hidden",
@@ -290,40 +304,64 @@ export default function ListPage() {
 
   const filtered = places.filter(p => (cat === "전체" || p.category === cat) && (region === "전체" || (p.region && p.region.includes(region))) && (!onlyFav || favs.has(p.id)));
 
-  return (
     <div style={{ background: "#f5f4f2", minHeight: "100vh" }}>
       <style>{`
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .responsive-grid {
+          display: grid;
+          gap: 16px;
+          grid-template-columns: repeat(1, minmax(0, 1fr));
+        }
+        
+        @media (min-width: 640px) {
+          .responsive-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+        }
+        
+        @media (min-width: 1024px) {
+          .responsive-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+          }
+        }
+
+        .main-container {
+          max-width: 1200px;
+          margin: 0 auto;
+        }
       `}</style>
       <div style={{ background: "white", padding: "18px 18px 0", position: "sticky", top: HEADER_HEIGHT, zIndex: 30, boxShadow: "0 1px 0 #eeebe6", margin: "0 -1rem" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, padding: "0 18px" }}>
-          <h1 style={{ fontSize: 20, fontWeight: 900, color: "#111" }}>🍽️ <span style={{ color: BRAND }}>맛집</span> 목록</h1>
-          <button onClick={() => setOnlyFav(!onlyFav)} style={{ padding: "5px 12px", borderRadius: 99, fontSize: 11, fontWeight: 700, border: `1.5px solid ${onlyFav ? "#fca5a5" : "#e5e7eb"}`, background: onlyFav ? "#fef2f2" : "white", color: onlyFav ? "#ef4444" : "#9ca3af", cursor: "pointer" }}>{onlyFav ? "❤️ 즐겨찾기" : "🤍 즐겨찾기"}</button>
-        </div>
-        
-        <form onSubmit={handleSearch} style={{ position: "relative", marginBottom: 12, padding: "0 18px" }}>
-          <span style={{ position: "absolute", left: 34, top: "50%", transform: "translateY(-50%)", color: "#aaa", fontSize: 14 }}>🔍</span>
-          <input value={query} onChange={e => setQuery(e.target.value)} placeholder="맛집을 검색하세요" style={{ width: "100%", padding: "12px 16px 12px 42px", background: "#f3f4f6", border: "none", borderRadius: 24, fontSize: 13, outline: "none", boxSizing: "border-box" }} />
-        </form>
-
-        <div style={{ padding: "0 18px 12px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-            <span style={{ fontSize: 12, fontWeight: 800, color: "#666" }}>📍 지역</span>
-            <div className="hide-scrollbar" style={{ display: "flex", gap: 7, overflowX: "auto", flex: 1 }}>
-              {REGIONS.map(r => (<button key={r} onClick={() => setRegion(r)} style={{ flexShrink: 0, padding: "6px 14px", borderRadius: 99, fontSize: 11, fontWeight: 700, border: "none", background: region === r ? `linear-gradient(135deg,${BRAND},${BRAND2})` : "#f3f4f6", color: region === r ? "white" : "#6b7280" }}>{r}</button>))}
-            </div>
+        <div className="main-container">
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, padding: "0 18px" }}>
+            <h1 style={{ fontSize: 20, fontWeight: 900, color: "#111" }}>🍽️ <span style={{ color: BRAND }}>맛집</span> 목록</h1>
+            <button onClick={() => setOnlyFav(!onlyFav)} style={{ padding: "5px 12px", borderRadius: 99, fontSize: 11, fontWeight: 700, border: `1.5px solid ${onlyFav ? "#fca5a5" : "#e5e7eb"}`, background: onlyFav ? "#fef2f2" : "white", color: onlyFav ? "#ef4444" : "#9ca3af", cursor: "pointer" }}>{onlyFav ? "❤️ 즐겨찾기" : "🤍 즐겨찾기"}</button>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: 12, fontWeight: 800, color: "#666" }}>🍴 분야</span>
-            <div className="hide-scrollbar" style={{ display: "flex", gap: 7, overflowX: "auto", flex: 1 }}>
-              {CATEGORIES.map(c => (<button key={c} onClick={() => setCat(c)} style={{ flexShrink: 0, padding: "5px 14px", borderRadius: 99, fontSize: 11, fontWeight: 700, border: `1.5px solid ${cat === c ? BRAND : "#e5e7eb"}`, background: cat === c ? "#fff5f3" : "white", color: cat === c ? BRAND : "#9ca3af" }}>{CATEGORY_ICONS[c]} {c}</button>))}
+          
+          <form onSubmit={handleSearch} style={{ position: "relative", marginBottom: 12, padding: "0 18px" }}>
+            <span style={{ position: "absolute", left: 34, top: "50%", transform: "translateY(-50%)", color: "#aaa", fontSize: 14 }}>🔍</span>
+            <input value={query} onChange={e => setQuery(e.target.value)} placeholder="맛집 이름을 검색하세요" style={{ width: "100%", padding: "12px 16px 12px 42px", background: "#f3f4f6", border: "none", borderRadius: 24, fontSize: 13, outline: "none", boxSizing: "border-box" }} />
+          </form>
+
+          <div style={{ padding: "0 18px 12px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+              <span style={{ fontSize: 12, fontWeight: 800, color: "#666" }}>📍 지역</span>
+              <div className="hide-scrollbar" style={{ display: "flex", gap: 7, overflowX: "auto", flex: 1 }}>
+                {REGIONS.map(r => (<button key={r} onClick={() => setRegion(r)} style={{ flexShrink: 0, padding: "6px 14px", borderRadius: 99, fontSize: 11, fontWeight: 700, border: "none", background: region === r ? `linear-gradient(135deg,${BRAND},${BRAND2})` : "#f3f4f6", color: region === r ? "white" : "#6b7280" }}>{r}</button>))}
+              </div>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 12, fontWeight: 800, color: "#666" }}>🍴 분야</span>
+              <div className="hide-scrollbar" style={{ display: "flex", gap: 7, overflowX: "auto", flex: 1 }}>
+                {CATEGORIES.map(c => (<button key={c} onClick={() => setCat(c)} style={{ flexShrink: 0, padding: "5px 14px", borderRadius: 99, fontSize: 11, fontWeight: 700, border: `1.5px solid ${cat === c ? BRAND : "#e5e7eb"}`, background: cat === c ? "#fff5f3" : "white", color: cat === c ? BRAND : "#9ca3af" }}>{CATEGORY_ICONS[c]} {c}</button>))}
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div style={{ padding: "12px 18px 48px" }}>
+      <div className="main-container" style={{ padding: "24px 18px 48px" }}>
         {loading && places.length === 0 ? (
           <div style={{ textAlign: "center", padding: "80px 0", color: "#9ca3af" }}>
             <div className="animate-bounce" style={{ fontSize: 40, marginBottom: 16 }}>🍲</div>
@@ -349,7 +387,7 @@ export default function ListPage() {
             </button>
           </div>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          <div className="responsive-grid">
             {filtered.map(p => (
               <PlaceCard 
                 key={p.id} 
