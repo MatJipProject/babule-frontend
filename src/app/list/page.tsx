@@ -342,12 +342,16 @@ function DetailPanel({ place, isFav, onFav, onClose, onReviewSubmit }: {
                     <div key={rev.id} style={{ borderBottom: "1px solid #f0f0f0", paddingBottom: 20 }}>
                       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
                         <div>
-                          <span style={{ fontSize: 13, fontWeight: 700, color: "#333", marginRight: 8 }}>사용자</span>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: "#333", marginRight: 8 }}>
+                            {(rev as any).nickname || (rev as any).username || (rev as any).author || "사용자"}
+                          </span>
                           <span style={{ fontSize: 11, color: "#fbbf24" }}>★ {rev.rating}</span>
                         </div>
                         <span style={{ fontSize: 11, color: "#9ca3af" }}>{new Date(rev.createdAt).toLocaleDateString()}</span>
                       </div>
-                      <p style={{ fontSize: 13, color: "#4b5563", lineHeight: 1.6 }}>{rev.content}</p>
+                      <p style={{ fontSize: 13, color: "#4b5563", lineHeight: 1.6 }}>
+                        {(rev as any).content || (rev as any).comment || (rev as any).body || "내용 없음"}
+                      </p>
                     </div>
                   ))}
                 </div>

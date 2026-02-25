@@ -97,7 +97,11 @@ export async function fetchReviews(restaurantId: string): Promise<Review[]> {
   try {
     const res = await fetch(`${API_BASE_URL}/api/v1/restaurants/${restaurantId}/reviews`);
     if (!res.ok) throw new Error('리뷰 목록을 불러오는데 실패했습니다.');
-    return res.json();
+    const data = await res.json();
+    
+    // API 응답이 { content: [] } 형태이거나 { reviews: [] } 형태일 경우를 모두 대응
+    const list = Array.isArray(data) ? data : (data.content || data.reviews || []);
+    return list;
   } catch (error) {
     console.error("fetchReviews Error:", error);
     return [];
