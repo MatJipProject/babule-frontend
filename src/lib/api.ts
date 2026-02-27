@@ -29,6 +29,7 @@ export interface Review {
   id: string;
   restaurantId: string;
   userId: string;
+  nickname?: string;
   rating: number;
   content: string;
   createdAt: string;
@@ -95,13 +96,29 @@ export async function registerRestaurant(restaurantData: {
 // 리뷰 목록 조회
 export async function fetchReviews(restaurantId: string): Promise<Review[]> {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/v1/restaurants/${restaurantId}/reviews`);
-    if (!res.ok) throw new Error('리뷰 목록을 불러오는데 실패했습니다.');
-    const data = await res.json();
+    // 식당별 리뷰 조회 API 시도 (새로운 통합 엔드포인트)
+    let res = await fetch(`${API_BASE_URL}/api/v1/reviews?restaurant_id=${restaurantId}`);
     
-    // API 응답이 { content: [] } 형태이거나 { reviews: [] } 형태일 경우를 모두 대응
+    if (!res.ok) {
+        // 기존 엔드포인트 시도
+        res = await fetch(`${API_BASE_URL}/api/v1/restaurants/${restaurantId}/reviews`);
+    }
+
+    if (!res.ok) throw new Error('리뷰 목록을 불러오는데 실패했습니다.');
+    
+    const data = await res.json();
     const list = Array.isArray(data) ? data : (data.content || data.reviews || []);
-    return list;
+    
+    return list.map((r: any) => ({
+        id: r.id?.toString() || "",
+        restaurantId: (r.restaurant_id || r.restaurantId || restaurantId).toString(),
+        userId: (r.user_id || r.userId || "").toString(),
+        nickname: r.nickname || r.username || r.author || "사용자",
+        rating: r.rating || 0,
+        content: r.content || r.comment || "",
+        createdAt: r.created_at || r.createdAt || new Date().toISOString(),
+        imageUrls: r.image_urls || r.imageUrls || []
+    }));
   } catch (error) {
     console.error("fetchReviews Error:", error);
     return [];
@@ -114,19 +131,30 @@ export async function postReview(restaurantId: string, review: {
   content: string;
 }, files?: File[]): Promise<any> {
   const formData = new FormData();
-  formData.append('request_data', JSON.stringify({
-    restaurant_id: Number(restaurantId),
-    rating: review.rating,
-    content: review.content,
-  }));
+  formData.append('restaurant_id', restaurantId);
+  formData.append('rating', review.rating.toString());
+  formData.append('content', review.content);
+  
   if (files) {
     files.forEach(file => formData.append('files', file));
   }
-  const res = await fetch(`${API_BASE_URL}/api/v1/reviews/register`, {
+
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const headers: HeadersInit = {};
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_BASE_URL}/api/v1/reviews`, {
     method: 'POST',
+    headers: headers,
     body: formData,
   });
-  if (!res.ok) throw new Error('리뷰 등록에 실패했습니다.');
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    console.error("postReview Error:", errorData);
+    throw new Error(errorData.detail || '리뷰 등록에 실패했습니다.');
+  }
   return res.json();
 }
 

@@ -207,7 +207,7 @@ function DetailPanel({ place, isFav, onFav, onClose, onReviewSubmit }: {
         maxHeight: "92vh",
         maxWidth: 400,
         animation: "scaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)",
-        boxShadow: "0 10px 100px rgba(0,0,0,0.4)",
+        boxShadow: "0 30px 100px rgba(0,0,0,0.4)",
         borderRadius: 36, overflow: "hidden",
       }}>
         {/* 상단 핸들 바 */}
@@ -215,11 +215,11 @@ function DetailPanel({ place, isFav, onFav, onClose, onReviewSubmit }: {
           <div style={{ width: 36, height: 4, borderRadius: 99, background: "#e5e7eb" }} />
         </div>
 
-        <div className="hide-scrollbar" style={{ flex: 1, overflowY: "auto", padding: "28px 0 8px" }}>
+        <div className="hide-scrollbar" style={{ flex: 1, overflowY: "auto", padding: "30px 0 8px" }}>
           {view === "info" ? (
             <>
               {/* 이미지 헤더 */}
-              <div style={{ position: "relative", height: 240, ...backgroundStyle, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 14px 0", borderRadius: 28 }}>
+              <div style={{ position: "relative", height: 230, ...backgroundStyle, display: "flex", alignItems: "center", justifyContent: "center", margin: "4px 14px 0", borderRadius: 28 }}>
                 {!place.grad?.startsWith('url') && <span style={{ fontSize: 80, filter: "drop-shadow(0 10px 20px rgba(0,0,0,0.15))" }}>{place.emoji || "🍴"}</span>}
                 
                 {/* 하트 버튼 */}
