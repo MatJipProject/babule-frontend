@@ -1,6 +1,7 @@
 "use client";
 
 import { HEADER_HEIGHT } from "@/components/Header";
+import { useAuth } from "@/context/AuthContext";
 import { fetchPlaces, fetchReviews, Place, postReview, Review, searchRestaurants } from "@/lib/api";
 import { useEffect, useState } from "react";
 
@@ -130,6 +131,7 @@ function DetailPanel({ place, isFav, onFav, onClose, onReviewSubmit }: {
   onClose: () => void;
   onReviewSubmit: () => void;
 }) {
+  const { user, openLoginModal } = useAuth();
   const [view, setView] = useState("info"); // "info" | "review" | "reviews"
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
@@ -175,8 +177,24 @@ function DetailPanel({ place, isFav, onFav, onClose, onReviewSubmit }: {
     setPhotoPreviews(photoPreviews.filter((_, i) => i !== idx));
   };
 
+  const handleOpenReview = () => {
+    if (!user) {
+      alert("리뷰를 작성하려면 로그인이 필요합니다.");
+      onClose();
+      openLoginModal();
+      return;
+    }
+    setView("review");
+  };
+
   const handleSubmitReview = async () => {
     if (!isValid) return;
+    if (!user) {
+      alert("리뷰를 작성하려면 로그인이 필요합니다.");
+      onClose();
+      openLoginModal();
+      return;
+    }
     try {
       await postReview(place.id, { rating, content: comment }, photos);
       alert("리뷰가 등록되었습니다!");
@@ -185,8 +203,8 @@ function DetailPanel({ place, isFav, onFav, onClose, onReviewSubmit }: {
       setPhotos([]);
       setPhotoPreviews([]);
       onReviewSubmit();
-    } catch (e) {
-      alert("리뷰 등록에 실패했습니다.");
+    } catch (e: any) {
+      alert(e.message || "리뷰 등록에 실패했습니다.");
     }
   };
 
@@ -368,7 +386,7 @@ function DetailPanel({ place, isFav, onFav, onClose, onReviewSubmit }: {
         {/* 하단 버튼 (고정) */}
         {view === "info" && (
           <div style={{ padding: "12px 24px 16px", display: "flex", gap: 12, background: "white", borderTop: "1px solid #f3f4f6", zIndex: 10 }}>
-            <button onClick={() => setView("review")} style={{ flex: 1, padding: "16px", background: "white", color: BRAND, fontWeight: 800, borderRadius: 18, border: `1.5px solid ${BRAND}33`, cursor: "pointer", fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+            <button onClick={handleOpenReview} style={{ flex: 1, padding: "16px", background: "white", color: BRAND, fontWeight: 800, borderRadius: 18, border: `1.5px solid ${BRAND}33`, cursor: "pointer", fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
               ✍️ 리뷰 등록
             </button>
             <button style={{ flex: 1.5, padding: "16px", background: `linear-gradient(135deg,${BRAND},${BRAND2})`, color: "white", fontWeight: 800, borderRadius: 18, border: "none", cursor: "pointer", fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, boxShadow: `0 8px 24px ${BRAND}44` }}>
