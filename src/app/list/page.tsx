@@ -512,13 +512,13 @@ export default function ListPage() {
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <span style={{ fontSize: 12, fontWeight: 800, color: "#666", flexShrink: 0 }}>📍 지역</span>
               <div className="hide-scrollbar" style={{ display: "flex", gap: 7, overflowX: "auto", flex: 1 }}>
-                {REGIONS.map(r => (<button key={r} onClick={() => setRegion(r)} style={{ flexShrink: 0, padding: "6px 14px", borderRadius: 99, fontSize: 11, fontWeight: 700, border: "none", background: region === r ? BRAND : "#f3f4f6", color: region === r ? "white" : "#6b7280" }}>{r}</button>))}
+                {REGIONS.map(r => (<button key={r} onClick={() => setRegion(region === r ? "전체" : r)} style={{ flexShrink: 0, padding: "6px 14px", borderRadius: 99, fontSize: 11, fontWeight: 700, border: "none", background: region === r ? BRAND : "#f3f4f6", color: region === r ? "white" : "#6b7280" }}>{r}</button>))}
               </div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <span style={{ fontSize: 12, fontWeight: 800, color: "#666", flexShrink: 0 }}>🍴 분야</span>
               <div className="hide-scrollbar" style={{ display: "flex", gap: 7, overflowX: "auto", flex: 1 }}>
-                {CATEGORIES.map(c => (<button key={c} onClick={() => setCat(c)} style={{ flexShrink: 0, padding: "5px 14px", borderRadius: 99, fontSize: 11, fontWeight: 700, border: `1.5px solid ${cat === c ? BRAND : "#e5e7eb"}`, background: cat === c ? "#fff5f3" : "white", color: cat === c ? BRAND : "#9ca3af" }}>{CATEGORY_ICONS[c]} {c}</button>))}
+                {CATEGORIES.map(c => (<button key={c} onClick={() => setCat(cat === c ? "전체" : c)} style={{ flexShrink: 0, padding: "5px 14px", borderRadius: 99, fontSize: 11, fontWeight: 700, border: `1.5px solid ${cat === c ? BRAND : "#e5e7eb"}`, background: cat === c ? "#fff5f3" : "white", color: cat === c ? BRAND : "#9ca3af" }}>{CATEGORY_ICONS[c]} {c}</button>))}
               </div>
             </div>
           </div>
