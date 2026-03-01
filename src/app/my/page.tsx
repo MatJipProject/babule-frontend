@@ -3,7 +3,7 @@
 import { useAuth } from "@/context/AuthContext";
 
 export default function MyPage() {
-  const { user, openLoginModal } = useAuth();
+  const { user, openLoginModal, openSignupModal } = useAuth();
 
   return (
     <div className="min-h-[calc(100vh-56px)] bg-gray-50 py-10 px-4">
@@ -43,12 +43,20 @@ export default function MyPage() {
             <p className="text-gray-500 mb-6">
               마이페이지는 로그인 후 이용할 수 있습니다.
             </p>
-            <button
-              onClick={openLoginModal}
-              className="w-full py-3 px-4 bg-[#E8513D] hover:bg-[#d9402c] text-white font-bold rounded-xl transition-colors shadow-lg shadow-orange-500/30"
-            >
-              로그인하기
-            </button>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={openLoginModal}
+                className="w-full py-3 px-4 bg-[#E8513D] hover:bg-[#d9402c] text-white font-bold rounded-xl transition-colors shadow-lg shadow-orange-500/30"
+              >
+                로그인하기
+              </button>
+              <button
+                onClick={openSignupModal}
+                className="w-full py-3 px-4 bg-transparent hover:bg-gray-50 text-gray-600 font-bold rounded-xl transition-colors border border-gray-200"
+              >
+                회원가입
+              </button>
+            </div>
           </div>
         </div>
       )}
