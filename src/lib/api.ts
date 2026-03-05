@@ -101,6 +101,37 @@ export async function searchRestaurants(query: string): Promise<any[]> {
   }
 }
 
+// 맛집 이름으로 검색하는 API 함수
+export async function searchRestaurantsByName(keyword: string) {
+  try {
+    // ⚠️ 주의: 404 에러가 났던 주소 대신 가장 일반적인 검색 쿼리 방식을 적용했습니다.
+    // 실제 백엔드 API 명세에 따라 '/search?query=' 또는 '?name=' 등으로 수정이 필요할 수 있습니다.
+    const res = await fetch(`${API_BASE_URL}/api/v1/restaurants/search?query=${encodeURIComponent(keyword)}`);
+    
+    if (!res.ok) {
+      throw new Error(`검색 실패: 상태 코드 ${res.status}`);
+    }
+
+    const data = await res.json();
+
+    // 데이터를 받아서 곧바로 컴포넌트가 쓰기 편한 형태로 가공(Mapping)합니다.
+    return (data.items || []).map((item: any) => ({
+      id: item.kakao_place_id,                 // 고유 식별자
+      name: item.name,                         // 상호명
+      address: item.road_address || item.address, // 도로명 우선
+      image_url: item.image_url || "https://via.placeholder.com/200?text=No+Image", // 대체 이미지
+      category: item.category,
+      phone: item.phone,
+      place_url: item.place_url,
+      latitude: item.latitude,
+      longitude: item.longitude,
+    }));
+  } catch (error) {
+    console.error("searchRestaurantsByName Error:", error);
+    return []; // 에러 발생 시 컴포넌트가 터지지 않도록 빈 배열 반환
+  }
+}
+
 // 맛집 등록
 export async function registerRestaurant(restaurantData: {
   name: string;
