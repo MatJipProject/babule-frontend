@@ -1,14 +1,17 @@
 // ── API 응답 타입 정의 (https://api.baebulook.site 기준) ──
 
+// 1. 백엔드 API에서 날아오는 원본 데이터 타입
 export interface ReviewResponse {
   id: number;
   user_id: number;
   restaurant_id: number;
   rating: number;
   content: string;
+  images: string[];
   created_at: string;
-  images?: string[];   // image_url 문자열 배열
-  nickname?: string;   // 작성자 닉네임 (있을 수도 없을 수도)
+  user: {
+    nickname: string;
+  };
 }
 
 /** /api/v1/restaurants/nearby 응답 */

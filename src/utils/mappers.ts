@@ -69,9 +69,17 @@ export function mapDetailToPlaceData(res: RestaurantDetailResponse): PlaceData {
 export function mapReviewResponse(res: ReviewResponse): Review {
   return {
     id: String(res.id),
-    author: res.nickname || `사용자${res.user_id}`,
+    
+    // 💡 핵심 1: user 객체 안으로 접근해서 nickname을 꺼냅니다. (데이터가 없을 경우 "사용자"로 기본값)
+    author: res.user?.nickname || "사용자", 
+    
     rating: res.rating,
     content: res.content,
-    date: res.created_at.slice(0, 10),
+    
+    // 💡 핵심 2: "2026-03-13T05:44..." 에서 앞의 10자리("2026-03-13")만 자릅니다.
+    date: res.created_at ? res.created_at.slice(0, 10) : "",
+    
+    // 💡 핵심 3: 방어회 사진 같은 이미지 배열을 그대로 넘겨줍니다.
+    images: res.images || [], 
   };
 }

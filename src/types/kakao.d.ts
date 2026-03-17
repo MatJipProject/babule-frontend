@@ -7,7 +7,7 @@ export interface Review {
   rating: number;
   content: string;
   date: string;
-  helpful?: number;
+  images: string[];
 }
 
 /** 지도에 표시되는 맛집 데이터 (API 응답을 mappers.ts로 변환한 결과) */
