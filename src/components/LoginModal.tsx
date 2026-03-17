@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 
 export default function LoginModal() {
-  const { isLoginModalOpen, closeLoginModal, login } = useAuth();
+  const { isLoginModalOpen, closeLoginModal, login, openSignupModal } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -87,6 +87,16 @@ export default function LoginModal() {
               {isLoading ? "로그인 중..." : "로그인하기"}
             </button>
           </form>
+
+          <div className="mt-6 text-center text-sm text-gray-600">
+            계정이 없으신가요?{" "}
+            <button
+              onClick={openSignupModal}
+              className="text-[#E8513D] font-semibold hover:underline"
+            >
+              회원가입
+            </button>
+          </div>
         </div>
       </div>
     </div>
